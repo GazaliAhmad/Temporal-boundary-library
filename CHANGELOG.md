@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project aims to follow Semantic Versioning.
 
+## [Unreleased]
+
+### Added
+
+- `ROADMAP.md` capturing the product frame, API stabilization plan, packaging work, example strategy, and milestones for the reusable library.
+- `package.json` with a minimal ESM package setup and a zero-dependency `npm test` script.
+- Initial test suite covering fixed boundary resolution, shifting daily boundaries, grouping behavior, helper functions, and invalid strategy paths.
+- Local test runner in `test/run-tests.js` to keep the test suite runnable in constrained environments.
+
 ## [0.1.0] - 2026-04-19
 
 ### Added

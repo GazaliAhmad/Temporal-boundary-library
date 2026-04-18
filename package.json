@@ -1,0 +1,31 @@
+{
+  "name": "temporal-boundary-library",
+  "version": "0.1.0",
+  "description": "A small JavaScript library for resolving custom operational day boundaries.",
+  "type": "module",
+  "main": "./lib/temporal-boundary-library.js",
+  "exports": {
+    ".": "./lib/temporal-boundary-library.js"
+  },
+  "files": [
+    "lib/",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "test": "node test/run-tests.js"
+  },
+  "keywords": [
+    "time",
+    "date",
+    "temporal",
+    "boundary",
+    "operational-day",
+    "reporting"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "."
+  },
+  "license": "UNLICENSED"
+}
