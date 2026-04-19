@@ -16,9 +16,6 @@ Best for:
 - payroll and reporting pipelines
 - compliance and audit grouping logic
 
-Install:
-`npm install day-boundary`
-
 ## Why this exists
 
 Production systems still need deterministic day windows for grouping, reporting, and handover logic.
@@ -45,14 +42,11 @@ Everything else is derived from that.
 
 ## Status
 
-The repo currently contains two API tracks:
+The project is v2-first.
 
-- v2: the main recommended API for new work, exported from `day-boundary`
-- v1: the legacy `Date`-based compatibility API in `./lib/day-boundary-v1.js` and `day-boundary/v1`
+Use the package root `day-boundary` for boundary resolution and `day-boundary/shifts` for companion shift helpers.
 
-Use v2 if your system is global, needs explicit IANA time zones, or must handle DST correctly.
-
-Keep using v1 only if you need the older simple `Date`-based path or are migrating existing usage gradually.
+v2 is designed for explicit IANA time zones and correct DST handling.
 
 ## Installation
 
@@ -85,22 +79,6 @@ In browsers without a bundler, add an import map for the polyfill and its `jsbi`
 
 See [V2-USAGE.md](./V2-USAGE.md) for the full copy-paste setup.
 
-### Legacy v1 import
-
-No build step required. Use as a native ES module.
-
-```html
-<script type="module">
-  import { ... } from './lib/day-boundary-v1.js';
-</script>
-```
-
-For package consumers, the legacy path is available at:
-
-```js
-import { ... } from 'day-boundary/v1';
-```
-
 ## Concepts
 
 A BoundaryStrategy defines how a day boundary is resolved.
@@ -112,7 +90,7 @@ Two implementations are provided:
 
 For the explicit time-zone-aware v2 direction, see [V2-API.md](./V2-API.md) and [V2-USAGE.md](./V2-USAGE.md).
 
-## Main Example: Fixed boundary with v2
+## Main Example: Fixed Boundary With v2
 
 ```js
 import { Temporal } from '@js-temporal/polyfill';
@@ -132,75 +110,7 @@ console.log(window.start.toString());
 console.log(window.end.toString());
 ```
 
-## Legacy Example: Fixed boundary (09:00 day start)
-
-```js
-import {
-  FixedTimeBoundaryStrategy,
-  getActiveWindow,
-} from './lib/day-boundary-v1.js';
-
-const strategy = new FixedTimeBoundaryStrategy({
-  startHour: 9,
-  startMinute: 0,
-});
-
-const now = new Date();
-const window = getActiveWindow(now, strategy);
-
-console.log(window);
-// { start: 2026-04-18T09:00, end: 2026-04-19T09:00 }
-```
-
-## Example: Shifting boundary (per-day lookup)
-
-```js
-import {
-  DailyBoundaryStrategy,
-  getActiveWindow,
-} from './lib/day-boundary-v1.js';
-
-const mockBoundaries = {
-  "2026-04-17": "18:58",
-  "2026-04-18": "18:59",
-  "2026-04-19": "19:00",
-};
-
-function getBoundaryForDate(date) {
-  const key = date.toISOString().slice(0, 10);
-  const [h, m] = mockBoundaries[key].split(':').map(Number);
-
-  const result = new Date(date);
-  result.setHours(h, m, 0, 0);
-  return result;
-}
-
-const strategy = new DailyBoundaryStrategy({
-  getBoundaryForDate,
-});
-```
-
 ## API
-
-getActiveWindow(date, strategy)
-Returns the current window for a timestamp.
-
-getWindowForTimestamp(date, strategy)
-Resolves which window a timestamp belongs to.
-
-getWindowProgress(date, window)
-Returns a number between 0 and 1 representing progress through the window.
-
-groupByWindow(items, getTimestamp, strategy)
-Groups items into their corresponding windows.
-
-isSameWindow(a, b, strategy)
-Checks whether two timestamps resolve to the same window.
-
-getWindowId(window)
-Returns a stable identifier for a window.
-
-## V2 API
 
 The main v2 surface is:
 
@@ -227,7 +137,6 @@ import {
 
 See:
 
-- [USAGE.md](./USAGE.md) for legacy v1 examples
 - [V2-USAGE.md](./V2-USAGE.md) for v2 examples
 - [V2-API.md](./V2-API.md) for the detailed v2 design spec
 
@@ -252,7 +161,7 @@ It is for business rules such as:
 
 Those can diverge on DST transition days.
 
-## Shift Work And DST
+## Shift Work and DST
 
 For shift workers, healthcare, and hospital care, DST days introduce an important distinction:
 
@@ -369,7 +278,6 @@ Open:
 ## Design constraints
 
 * v2 is the main path and uses `Temporal` plus `@js-temporal/polyfill`
-* v1 remains available as a legacy `Date`-based compatibility path
 * Strategy-driven
 * Pure computation functions
 

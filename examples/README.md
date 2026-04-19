@@ -17,7 +17,7 @@ Then open:
 
 Notes:
 
-- the Hijri POC and DST toy app use the v2 path
-- the shift toy app uses the companion `day-boundary/shifts` helpers
-- the Hijri POC, DST toy app, and shift toy app use an import map for `@js-temporal/polyfill` and `jsbi`
-- the Hijri POC reads CSV data from `../../data/`
+- The Hijri POC and DST toy app use the v2 path.
+- The shift toy app uses the companion `day-boundary/shifts` helpers.
+- The Hijri POC, DST toy app, and shift toy app use an import map for `@js-temporal/polyfill` and `jsbi`.
+- The Hijri POC reads CSV data from `../../data/`.

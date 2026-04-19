@@ -6,7 +6,6 @@
   "main": "./lib/day-boundary-v2.js",
   "exports": {
     ".": "./lib/day-boundary-v2.js",
-    "./v1": "./lib/day-boundary-v1.js",
     "./v2": "./lib/day-boundary-v2.js",
     "./shifts": "./lib/day-boundary-shifts-v2.js"
   },
@@ -16,7 +15,6 @@
     "README.md",
     "IP-NOTICE.md",
     "CHANGELOG.md",
-    "USAGE.md",
     "V2-API.md",
     "V2-USAGE.md"
   ],
@@ -31,14 +29,14 @@
     "operational-day",
     "reporting"
   ],
- "repository": {
+  "repository": {
     "type": "git",
-   "url": "git+https://github.com/GazaliAhmad/Temporal-boundary-library.git"
+    "url": "git+https://github.com/GazaliAhmad/day-boundary.git"
   },
   "bugs": {
-    "url": "https://github.com/GazaliAhmad/Temporal-boundary-library/issues"
+    "url": "https://github.com/GazaliAhmad/day-boundary/issues"
   },
-  "homepage": "https://github.com/GazaliAhmad/Temporal-boundary-library#readme",
+  "homepage": "https://github.com/GazaliAhmad/day-boundary#readme",
   "license": "MIT",
   "dependencies": {
     "@js-temporal/polyfill": "^0.5.1"

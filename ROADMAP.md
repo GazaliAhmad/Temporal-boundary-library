@@ -9,24 +9,21 @@ The library is now positioned as:
 The current direction is:
 
 - v2 is the main API for new work
-- v1 remains available as a legacy compatibility path
 - shift-specific semantics stay in a companion layer, not in the core boundary engine
 
 ## Current State
 
 The repo already includes:
 
-- a legacy v1 API in [lib/day-boundary-v1.js](./lib/day-boundary-v1.js)
 - a main v2 API in [lib/day-boundary-v2.js](./lib/day-boundary-v2.js)
 - a companion shift layer in [lib/day-boundary-shifts-v2.js](./lib/day-boundary-shifts-v2.js)
-- a test suite covering v1, v2, DST-sensitive windows, and shift semantics
+- a test suite covering boundary windows, DST-sensitive behavior, and shift semantics
 - browser examples in [examples/](./examples/)
 - npm packaging metadata for `day-boundary@2.0.0`
 
 The package surface is currently:
 
 - `day-boundary` -> main v2 API
-- `day-boundary/v1` -> legacy v1 API
 - `day-boundary/v2` -> explicit v2 subpath
 - `day-boundary/shifts` -> companion shift helpers
 
@@ -66,14 +63,7 @@ That means future product and documentation decisions should assume:
 
 ### Legacy path
 
-v1 remains available for:
-
-- existing integrations
-- simpler local-only or single-zone usage
-- migration support
-
-v1 should be maintained conservatively.
-It should receive bug fixes and clarity improvements, but not drive the main design direction.
+Legacy v1 artifacts may remain in the repository for historical context and migration references, but they are no longer part of the promoted package surface.
 
 ## Current Examples
 
@@ -174,7 +164,6 @@ The following items are intentionally deferred unless stronger evidence appears:
 The documentation should continue to reinforce:
 
 - `day-boundary` is the main v2 entry point
-- `day-boundary/v1` is the legacy path
 - `day-boundary/shifts` is a companion layer
 - the library is a boundary engine, not a general date library
 
