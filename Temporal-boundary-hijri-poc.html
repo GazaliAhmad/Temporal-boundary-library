@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hijri Maghrib Boundary POC</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      body {
+        margin: 0;
+        padding: 24px;
+        line-height: 1.5;
+      }
+
+      .wrap {
+        max-width: 860px;
+        margin: 0 auto;
+      }
+
+      .card {
+        border: 1px solid #9994;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 16px;
+      }
+
+      h1,
+      h2 {
+        margin-top: 0;
+      }
+
+      .controls,
+      .jump-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: end;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 220px;
+      }
+
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        word-break: break-word;
+      }
+
+      .kv {
+        display: grid;
+        grid-template-columns: minmax(160px, 220px) 1fr;
+        gap: 8px 16px;
+      }
+
+      button,
+      input {
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1px solid #9995;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .muted {
+        color: #666;
+      }
+
+      .status-error {
+        color: #b00020;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      .prayer-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .prayer-list li {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 6px 0;
+        border-top: 1px solid #9993;
+      }
+
+      .prayer-list li:first-child {
+        border-top: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Hijri Maghrib Boundary POC</h1>
+      <p>
+        This proof of concept uses the MUIS Hijri calendar together with daily
+        Maghrib times. The active Hijri day changes at Maghrib, not midnight.
+      </p>
+
+      <div class="card">
+        <h2>Controls</h2>
+        <div class="controls">
+          <button id="prev-day-button" type="button">Previous Hijri day</button>
+          <button id="today-button" type="button">Today</button>
+          <button id="next-day-button" type="button">Next Hijri day</button>
+        </div>
+        <div class="jump-row" style="margin-top: 16px;">
+          <label class="field">
+            <span>Jump to civil date</span>
+            <input id="date-input" type="date" />
+          </label>
+          <button id="date-apply-button" type="button">Go to date</button>
+        </div>
+        <div class="jump-row" style="margin-top: 12px;">
+          <label class="field">
+            <span>Jump to exact local timestamp</span>
+            <input id="datetime-input" type="datetime-local" step="60" />
+          </label>
+          <button id="datetime-apply-button" type="button">Go to timestamp</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Resolved day</h2>
+        <div id="status" class="mono muted">Loading CSV data...</div>
+        <div id="details" class="kv" hidden>
+          <div><strong>Selected timestamp</strong></div>
+          <div id="selected-timestamp" class="mono"></div>
+
+          <div><strong>Hijri date</strong></div>
+          <div id="hijri-date"></div>
+
+          <div><strong>Civil date</strong></div>
+          <div id="civil-date"></div>
+
+          <div><strong>Active window</strong></div>
+          <div id="window-range" class="mono"></div>
+
+          <div><strong>Next Maghrib boundary</strong></div>
+          <div id="boundary-time" class="mono"></div>
+
+          <div><strong>Window progress</strong></div>
+          <div id="progress-text" class="mono"></div>
+
+          <div><strong>Prayer times</strong></div>
+          <div id="prayer-times"></div>
+
+          <div><strong>Tahajjud</strong></div>
+          <div id="tahajjud-time" class="mono"></div>
+
+          <div><strong>Calendar event</strong></div>
+          <div id="event-text"></div>
+
+          <div><strong>Dataset coverage</strong></div>
+          <div id="coverage-text" class="mono"></div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import {
+        DailyBoundaryStrategy,
+        getActiveWindow,
+        getWindowProgress,
+      } from './lib/temporal-boundary-library.js';
+
+      const DATASET_TIMEZONE_LABEL = 'Asia/Singapore';
+      const ONE_MINUTE = 60 * 1000;
+      const NOON_HOUR = 12;
+
+      const state = {
+        strategy: null,
+        prayerByDate: new Map(),
+        hijriByDate: new Map(),
+        firstDateKey: '',
+        lastDateKey: '',
+        supportedTodayMessage: '',
+        referenceTimestamp: null,
+        isReady: false,
+      };
+
+      const statusEl = document.getElementById('status');
+      const detailsEl = document.getElementById('details');
+      const selectedTimestampEl = document.getElementById('selected-timestamp');
+      const hijriDateEl = document.getElementById('hijri-date');
+      const civilDateEl = document.getElementById('civil-date');
+      const windowRangeEl = document.getElementById('window-range');
+      const boundaryTimeEl = document.getElementById('boundary-time');
+      const progressTextEl = document.getElementById('progress-text');
+      const prayerTimesEl = document.getElementById('prayer-times');
+      const tahajjudTimeEl = document.getElementById('tahajjud-time');
+      const eventTextEl = document.getElementById('event-text');
+      const coverageTextEl = document.getElementById('coverage-text');
+      const prevDayButtonEl = document.getElementById('prev-day-button');
+      const todayButtonEl = document.getElementById('today-button');
+      const nextDayButtonEl = document.getElementById('next-day-button');
+      const dateInputEl = document.getElementById('date-input');
+      const dateApplyButtonEl = document.getElementById('date-apply-button');
+      const datetimeInputEl = document.getElementById('datetime-input');
+      const datetimeApplyButtonEl = document.getElementById('datetime-apply-button');
+
+      function setControlsEnabled(enabled) {
+        prevDayButtonEl.disabled = !enabled;
+        todayButtonEl.disabled = !enabled;
+        nextDayButtonEl.disabled = !enabled;
+        dateInputEl.disabled = !enabled;
+        dateApplyButtonEl.disabled = !enabled;
+        datetimeInputEl.disabled = !enabled;
+        datetimeApplyButtonEl.disabled = !enabled;
+      }
+
+      function parseCsv(text) {
+        const rows = [];
+        let cell = '';
+        let row = [];
+        let inQuotes = false;
+
+        for (let i = 0; i < text.length; i += 1) {
+          const char = text[i];
+          const next = text[i + 1];
+
+          if (char === '"') {
+            if (inQuotes && next === '"') {
+              cell += '"';
+              i += 1;
+            } else {
+              inQuotes = !inQuotes;
+            }
+            continue;
+          }
+
+          if (!inQuotes && char === ',') {
+            row.push(cell);
+            cell = '';
+            continue;
+          }
+
+          if (!inQuotes && (char === '\n' || char === '\r')) {
+            if (char === '\r' && next === '\n') {
+              i += 1;
+            }
+            row.push(cell);
+            rows.push(row);
+            row = [];
+            cell = '';
+            continue;
+          }
+
+          cell += char;
+        }
+
+        if (cell.length > 0 || row.length > 0) {
+          row.push(cell);
+          rows.push(row);
+        }
+
+        const [header = [], ...records] = rows.filter((entry) =>
+          entry.some((value) => value !== '')
+        );
+
+        return records.map((record) => {
+          const mapped = {};
+          header.forEach((key, index) => {
+            mapped[key] = record[index] ?? '';
+          });
+          return mapped;
+        });
+      }
+
+      function formatLocalDateKey(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+
+      function addDays(date, count) {
+        const result = new Date(date.getTime());
+        result.setDate(result.getDate() + count);
+        return result;
+      }
+
+      function createLocalDate(dateKey, hours = 0, minutes = 0) {
+        const [year, month, day] = dateKey.split('-').map(Number);
+        return new Date(year, month - 1, day, hours, minutes, 0, 0);
+      }
+
+      function createLocalDateTime(dateKey, timeValue) {
+        const [hours, minutes] = timeValue.split(':').map(Number);
+        return createLocalDate(dateKey, hours, minutes);
+      }
+
+      function parseDateInput(value) {
+        return value ? createLocalDate(value, NOON_HOUR, 0) : null;
+      }
+
+      function parseDateTimeInput(value) {
+        if (!value) return null;
+        const [dateKey, timeValue] = value.split('T');
+        if (!dateKey || !timeValue) return null;
+        const [hours, minutes] = timeValue.split(':').map(Number);
+        return createLocalDate(dateKey, hours, minutes || 0);
+      }
+
+      function toDateInputValue(date) {
+        return formatLocalDateKey(date);
+      }
+
+      function toDateTimeInputValue(date) {
+        return [
+          formatLocalDateKey(date),
+          `${String(date.getHours()).padStart(2, '0')}:${String(
+            date.getMinutes()
+          ).padStart(2, '0')}`,
+        ].join('T');
+      }
+
+      function formatDateTime(date) {
+        return new Intl.DateTimeFormat(undefined, {
+          year: 'numeric',
+          month: 'short',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false,
+        }).format(date);
+      }
+
+      function formatDateOnly(date) {
+        return new Intl.DateTimeFormat(undefined, {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          weekday: 'long',
+        }).format(date);
+      }
+
+      function formatTimeOnly(date) {
+        return new Intl.DateTimeFormat(undefined, {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        }).format(date);
+      }
+
+      function setStatus(message, isError = false) {
+        statusEl.textContent = message;
+        statusEl.className = `mono ${isError ? 'status-error' : 'muted'}`;
+      }
+
+      function getSyntheticBoundaryTime(dateKey) {
+        if (dateKey === formatLocalDateKey(addDays(createLocalDate(state.firstDateKey), -1))) {
+          return state.prayerByDate.get(state.firstDateKey).Maghrib;
+        }
+        if (dateKey === formatLocalDateKey(addDays(createLocalDate(state.lastDateKey), 1))) {
+          return state.prayerByDate.get(state.lastDateKey).Maghrib;
+        }
+        return '';
+      }
+
+      function getBoundaryForDate(date) {
+        const dateKey = formatLocalDateKey(date);
+        const prayerRow = state.prayerByDate.get(dateKey);
+        const maghribTime = prayerRow?.Maghrib || getSyntheticBoundaryTime(dateKey);
+
+        if (!maghribTime) {
+          throw new Error(`No Maghrib boundary found for ${dateKey}.`);
+        }
+
+        return createLocalDateTime(dateKey, maghribTime);
+      }
+
+      function clampToSupportedTimestamp(candidate) {
+        const earliest = createLocalDate(state.firstDateKey, 0, 0);
+        const latestBoundary = createLocalDateTime(
+          state.lastDateKey,
+          state.prayerByDate.get(state.lastDateKey).Maghrib
+        );
+        const latest = new Date(latestBoundary.getTime() - ONE_MINUTE);
+
+        if (candidate < earliest) {
+          state.supportedTodayMessage =
+            'Current system date is earlier than the 2026 dataset, so the view was clamped to the first supported day.';
+          return createLocalDate(state.firstDateKey, NOON_HOUR, 0);
+        }
+
+        if (candidate > latest) {
+          state.supportedTodayMessage =
+            'Current system date is later than the 2026 dataset, so the view was clamped to the last supported day.';
+          return createLocalDate(state.lastDateKey, NOON_HOUR, 0);
+        }
+
+        state.supportedTodayMessage = '';
+        return candidate;
+      }
+
+      function getLabelDateForWindow(window) {
+        return formatLocalDateKey(window.end);
+      }
+
+      function getTodayReferenceTimestamp() {
+        return clampToSupportedTimestamp(new Date());
+      }
+
+      function getResolvedState(referenceTimestamp) {
+        const window = getActiveWindow(referenceTimestamp, state.strategy);
+        const labelDateKey = getLabelDateForWindow(window);
+        const hijriRecord = state.hijriByDate.get(labelDateKey);
+
+        if (!hijriRecord) {
+          throw new RangeError(
+            `The timestamp falls outside the supported Hijri calendar range in the 2026 CSV files.`
+          );
+        }
+
+        return { window, labelDateKey, hijriRecord };
+      }
+
+      function buildPrayerTimeline(labelDateKey) {
+        const prayerRow = state.prayerByDate.get(labelDateKey);
+
+        if (!prayerRow) {
+          throw new Error('Prayer timetable data is missing for the resolved day.');
+        }
+
+        return [
+          { label: 'Maghrib', time: prayerRow.Maghrib, dateKey: labelDateKey },
+          { label: 'Isyak', time: prayerRow.Isyak, dateKey: labelDateKey },
+          { label: 'Subuh', time: prayerRow.Subuh, dateKey: labelDateKey },
+          { label: 'Syuruk', time: prayerRow.Syuruk, dateKey: labelDateKey },
+          { label: 'Zohor', time: prayerRow.Zohor, dateKey: labelDateKey },
+          { label: 'Asar', time: prayerRow.Asar, dateKey: labelDateKey },
+        ];
+      }
+
+      function getTahajjudWindow(labelDateKey) {
+        const prayerRow = state.prayerByDate.get(labelDateKey);
+        const nextDateKey = formatLocalDateKey(addDays(createLocalDate(labelDateKey), 1));
+        const nextPrayerRow = state.prayerByDate.get(nextDateKey);
+
+        if (!prayerRow) {
+          throw new Error('Prayer timetable data is missing for the Tahajjud calculation.');
+        }
+
+        if (!nextPrayerRow) {
+          return null;
+        }
+
+        const nightStart = createLocalDateTime(labelDateKey, prayerRow.Maghrib);
+        const nightEnd = createLocalDateTime(nextDateKey, nextPrayerRow.Subuh);
+        const nightDuration = nightEnd.getTime() - nightStart.getTime();
+
+        if (nightDuration <= 0) {
+          throw new RangeError('Tahajjud calculation requires Subuh to be after the previous Maghrib.');
+        }
+
+        const tahajjudStart = new Date(nightStart.getTime() + (nightDuration * 2) / 3);
+
+        return {
+          dateKey: nextDateKey,
+          start: tahajjudStart,
+          end: nightEnd,
+        };
+      }
+
+      function renderPrayerTimeline(labelDateKey) {
+        const timeline = buildPrayerTimeline(labelDateKey);
+        prayerTimesEl.innerHTML = `
+          <ul class="prayer-list mono">
+            ${timeline
+              .map(
+                (entry) => `
+                  <li>
+                    <span>${entry.label} (${entry.dateKey})</span>
+                    <strong>${entry.time}</strong>
+                  </li>
+                `
+              )
+              .join('')}
+          </ul>
+        `;
+      }
+
+      function render(referenceTimestamp) {
+        const { window, labelDateKey, hijriRecord } = getResolvedState(referenceTimestamp);
+
+        const progress = getWindowProgress(referenceTimestamp, window);
+        const civilDate = createLocalDate(labelDateKey, NOON_HOUR, 0);
+
+        detailsEl.hidden = false;
+        selectedTimestampEl.textContent = formatDateTime(referenceTimestamp);
+        hijriDateEl.textContent = `${hijriRecord.hijri_day} ${hijriRecord.hijri_month} ${hijriRecord.hijri_year}`;
+        civilDateEl.textContent = `${formatDateOnly(civilDate)} (${labelDateKey})`;
+        windowRangeEl.textContent = `${formatDateTime(window.start)} -> ${formatDateTime(window.end)}`;
+        boundaryTimeEl.textContent = formatDateTime(window.end);
+        progressTextEl.textContent = `${(progress * 100).toFixed(2)}%`;
+        renderPrayerTimeline(labelDateKey);
+        const tahajjudWindow = getTahajjudWindow(labelDateKey);
+        tahajjudTimeEl.textContent = tahajjudWindow
+          ? `${tahajjudWindow.dateKey}, ${formatTimeOnly(tahajjudWindow.start)} -> ${formatTimeOnly(
+              tahajjudWindow.end
+            )}`
+          : 'Unavailable because the next civil day is outside the loaded dataset.';
+        eventTextEl.textContent = hijriRecord.event || 'None';
+        coverageTextEl.textContent = `${state.firstDateKey} -> ${state.lastDateKey} (${DATASET_TIMEZONE_LABEL} prayer times)`;
+
+        dateInputEl.value = toDateInputValue(civilDate);
+        datetimeInputEl.value = toDateTimeInputValue(referenceTimestamp);
+
+        const statusParts = [
+          `Resolved using the active Maghrib-based window for ${labelDateKey}.`,
+        ];
+
+        if (state.supportedTodayMessage) {
+          statusParts.push(state.supportedTodayMessage);
+        }
+
+        setStatus(statusParts.join(' '));
+      }
+
+      function renderCurrentState() {
+        render(state.referenceTimestamp);
+      }
+
+      function trySetReferenceTimestamp(candidate, errorMessage) {
+        try {
+          render(candidate);
+          state.referenceTimestamp = candidate;
+          return true;
+        } catch (error) {
+          setStatus(errorMessage || error.message, true);
+          return false;
+        }
+      }
+
+      function shiftWindow(direction) {
+        const currentWindow = getActiveWindow(state.referenceTimestamp, state.strategy);
+        const candidate =
+          direction < 0
+            ? new Date(currentWindow.start.getTime() - ONE_MINUTE)
+            : new Date(currentWindow.end.getTime() + ONE_MINUTE);
+        trySetReferenceTimestamp(
+          candidate,
+          direction < 0
+            ? 'There is no earlier supported Hijri day in the loaded 2026 dataset.'
+            : 'There is no later supported Hijri day in the loaded 2026 dataset.'
+        );
+      }
+
+      async function loadData() {
+        const [prayerResponse, hijriResponse] = await Promise.all([
+          fetch('./data/MuslimPrayerTimetable2026.csv'),
+          fetch('./data/muis_hijri_calendar_2026.csv'),
+        ]);
+
+        if (!prayerResponse.ok || !hijriResponse.ok) {
+          throw new Error('Failed to load one or more CSV files from /data.');
+        }
+
+        const [prayerText, hijriText] = await Promise.all([
+          prayerResponse.text(),
+          hijriResponse.text(),
+        ]);
+
+        const prayerRows = parseCsv(prayerText);
+        const hijriRows = parseCsv(hijriText);
+
+        prayerRows.forEach((row) => {
+          state.prayerByDate.set(row.Date, row);
+        });
+
+        hijriRows.forEach((row) => {
+          state.hijriByDate.set(row.gregorian_date, row);
+        });
+
+        const supportedDates = Array.from(state.prayerByDate.keys()).sort();
+        state.firstDateKey = supportedDates[0];
+        state.lastDateKey = supportedDates[supportedDates.length - 1];
+        state.strategy = new DailyBoundaryStrategy({ getBoundaryForDate });
+        state.referenceTimestamp = getTodayReferenceTimestamp();
+        state.isReady = true;
+      }
+
+      prevDayButtonEl.addEventListener('click', () => {
+        if (!state.isReady) return;
+        shiftWindow(-1);
+      });
+
+      nextDayButtonEl.addEventListener('click', () => {
+        if (!state.isReady) return;
+        shiftWindow(1);
+      });
+
+      todayButtonEl.addEventListener('click', () => {
+        if (!state.isReady) return;
+        trySetReferenceTimestamp(getTodayReferenceTimestamp());
+      });
+
+      dateApplyButtonEl.addEventListener('click', () => {
+        if (!state.isReady) return;
+        const parsed = parseDateInput(dateInputEl.value);
+        if (!parsed) {
+          setStatus('Enter a civil date first.', true);
+          return;
+        }
+        state.supportedTodayMessage = '';
+        trySetReferenceTimestamp(
+          parsed,
+          'That civil date is outside the supported Hijri range in the loaded 2026 dataset.'
+        );
+      });
+
+      datetimeApplyButtonEl.addEventListener('click', () => {
+        if (!state.isReady) return;
+        const parsed = parseDateTimeInput(datetimeInputEl.value);
+        if (!parsed) {
+          setStatus('Enter a valid local timestamp first.', true);
+          return;
+        }
+        state.supportedTodayMessage = '';
+        trySetReferenceTimestamp(
+          parsed,
+          'That timestamp is outside the supported Hijri range in the loaded 2026 dataset.'
+        );
+      });
+
+      async function initializeApp() {
+        setControlsEnabled(false);
+        try {
+          await loadData();
+          renderCurrentState();
+          setControlsEnabled(true);
+        } catch (error) {
+          detailsEl.hidden = true;
+          setStatus(
+            `${error.message} Serve the folder over local HTTP so the browser can fetch the CSV files.`,
+            true
+          );
+        }
+      }
+
+      initializeApp();
+    </script>
+  </body>
+</html>
