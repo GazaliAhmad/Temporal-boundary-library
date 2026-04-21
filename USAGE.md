@@ -1,6 +1,6 @@
-# Legacy v1 Usage (Archived)
+# Archived v1 API Usage
 
-This file documents the legacy v1 API exported by `lib/day-boundary-v1.js`.
+This file documents the archived v1 API line exported by `lib/day-boundary-v1.js`.
 
 It is retained as an archive reference. For all new work, use [V2-USAGE.md](./V2-USAGE.md).
 

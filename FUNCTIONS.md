@@ -8,7 +8,7 @@ It includes:
 - internal helper functions used inside the main v2 library
 - the v2 shifts companion functions
 
-It does not cover the archived v1 API.
+It does not cover the archived v1 API line.
 
 ## Public API Table
 
@@ -27,6 +27,8 @@ It does not cover the archived v1 API.
 | Shifts v2 | `getShiftEndByElapsedDuration` | function | `day-boundary/shifts` | Exact elapsed-time shift ending |
 | Shifts v2 | `getShiftEndByWallClockDuration` | function | `day-boundary/shifts` | Wall-clock scheduled shift ending |
 | Shifts v2 | `compareShiftEndings` | function | `day-boundary/shifts` | Compare elapsed and wall-clock results |
+| Shifts v2 | `resolveShiftStart` | function | `day-boundary/shifts` | Resolve a shift start against business-defined early/late tolerance windows |
+| Shifts v2 | `resolveShiftEnd` | function | `day-boundary/shifts` | Resolve end-of-shift status, missing log-off inference, and time beyond scheduled end |
 
 ## Main v2 Library — Internal Source Helpers and Functions
 
@@ -98,7 +100,7 @@ These classes are defined in `lib/day-boundary-v2.js`.
 
 ## Shifts Companion Library — All Functions
 
-These functions are defined in `lib/day-boundary-shifts-v2.js`.
+These functions are exported from `lib/day-boundary-shifts-v2.js` and implemented in `lib/shifts/`.
 
 ### Shift duration helpers
 
@@ -108,9 +110,17 @@ These functions are defined in `lib/day-boundary-shifts-v2.js`.
 
 `compareShiftEndings(start, durationLike)`
 
+### Shift start tolerance helper
+
+`resolveShiftStart(eventTime, strategy, options)`
+
+### Shift end classification helper
+
+`resolveShiftEnd(logOffTime, scheduledShiftEnd, options)`
+
 ## Everything in One Consolidated List
 
-### Total functions (main + shifts): 18
+### Total functions (main + shifts): 20
 
 `defaultWindowLabel`
 
@@ -148,6 +158,10 @@ These functions are defined in `lib/day-boundary-shifts-v2.js`.
 
 `compareShiftEndings`
 
+`resolveShiftStart`
+
+`resolveShiftEnd`
+
 ### Plus 3 strategy classes
 
 `BoundaryStrategy`
@@ -160,4 +174,4 @@ These functions are defined in `lib/day-boundary-shifts-v2.js`.
 
 - Public exports from the main v2 library are the strategy classes plus `getWindowForInstant`, `getWindowForZonedDateTime`, `getWindowForPlainDateTime`, `getWindowProgress`, `getWindowId`, `isSameWindow`, and `groupByWindow`.
 - `defaultWindowLabel`, `toInstant`, `toPlainDateTime`, `toPlainTime`, `validateTimeZone`, `validateDisambiguation`, `plainDateTimeToZonedDateTime`, and `validateStrategy` are internal helpers, not part of the published root export list.
-- Public exports from the shifts companion library are `getShiftEndByElapsedDuration`, `getShiftEndByWallClockDuration`, and `compareShiftEndings`.
+- Public exports from the shifts companion library are `getShiftEndByElapsedDuration`, `getShiftEndByWallClockDuration`, `compareShiftEndings`, `resolveShiftStart`, and `resolveShiftEnd`.

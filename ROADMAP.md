@@ -1,6 +1,6 @@
 # Roadmap
 
-This roadmap reflects the current state of `day-boundary` after the `2.0.0` release.
+This roadmap reflects the current state of `day-boundary` after the `2.1.0` release.
 
 The library is now positioned as:
 
@@ -16,10 +16,10 @@ The current direction is:
 The repo already includes:
 
 - a main v2 API in [lib/day-boundary-v2.js](./lib/day-boundary-v2.js)
-- a companion shift layer in [lib/day-boundary-shifts-v2.js](./lib/day-boundary-shifts-v2.js)
+- a companion shift layer exported from [lib/day-boundary-shifts-v2.js](./lib/day-boundary-shifts-v2.js) with internal modules in `lib/shifts/`
 - a test suite covering boundary windows, DST-sensitive behavior, and shift semantics
 - browser examples in [examples/](./examples/)
-- npm packaging metadata for `day-boundary@2.0.0`
+- npm packaging metadata for `day-boundary@2.1.0`
 
 The package surface is currently:
 

@@ -95,7 +95,7 @@ Use when the boundary is the same wall-clock time every day in a given zone.
 ```ts
 new FixedTimeBoundaryStrategy({
   timeZone: string,
-  boundaryTime: string | Temporal.PlainTime,
+  boundaryTime: Temporal.PlainTime,
   label?: string,
   disambiguation?: 'compatible' | 'earlier' | 'later' | 'reject',
 })
@@ -106,7 +106,7 @@ Example:
 ```js
 const strategy = new FixedTimeBoundaryStrategy({
   timeZone: 'Europe/London',
-  boundaryTime: '09:00',
+  boundaryTime: Temporal.PlainTime.from('09:00'),
   label: 'operational-day',
 });
 ```
@@ -316,6 +316,8 @@ For shift-based domains such as hospitals, nursing care, transport, and factory 
 
 - `elapsed duration`
 - `wall-clock schedule`
+- `start tolerance windows`
+- `end-of-shift classification`
 
 These diverge on DST transition days.
 
@@ -331,6 +333,24 @@ Implication for library consumers:
 - `Temporal.ZonedDateTime` is the right primitive for wall-clock schedule rules
 
 This distinction should remain explicit in examples, docs, and any future higher-level scheduling helpers built on top of the boundary library.
+
+### Companion shift helpers
+
+The companion `day-boundary/shifts` entry point now includes:
+
+- `getShiftEndByElapsedDuration(start, duration)`
+- `getShiftEndByWallClockDuration(start, duration)`
+- `compareShiftEndings(start, duration)`
+- `resolveShiftStart(eventTime, strategy, options)`
+- `resolveShiftEnd(logOffTime, scheduledShiftEnd, options)`
+
+Rules:
+
+- shift helper inputs should use Temporal objects only in the typed API
+- start tolerance values use `Temporal.Duration` and compare exact instants around the boundary start
+- end-of-shift rules use `Temporal.Duration` and compare exact instants from scheduled shift end
+- the `overtime` field represents time beyond scheduled end, starting from scheduled shift end or from `scheduledShiftEnd + overtime.startsAfter` when a threshold is configured
+- inferred missing log-off handling should stay separate from confirmed post-end time
 
 ## Error behavior
 
@@ -406,4 +426,4 @@ The current implementation direction is:
 - input helpers accept Temporal objects only
 - zone and DST handling are explicit
 - calendar labeling remains outside core
-- core APIs prefer `Temporal.PlainTime` or `Temporal` objects where practical, with string parsing limited to convenience entry points
+- core APIs prefer Temporal objects in the typed public surface, with strict declaration files for `day-boundary` and `day-boundary/shifts`
