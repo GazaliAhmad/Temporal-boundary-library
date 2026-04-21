@@ -73,6 +73,7 @@ The current example suite is:
 - [examples/day-boundary-hijri-poc/index.html](./examples/day-boundary-hijri-poc/index.html)
 - [examples/day-boundary-dst-toy-app/index.html](./examples/day-boundary-dst-toy-app/index.html)
 - [examples/day-boundary-shift-toy-app/index.html](./examples/day-boundary-shift-toy-app/index.html)
+- [examples/day-boundary-shift-attendance-toy-app/index.html](./examples/day-boundary-shift-attendance-toy-app/index.html)
 
 These examples currently validate:
 
@@ -82,6 +83,9 @@ These examples currently validate:
 - DST-aware day duration behavior
 - global time-zone behavior
 - elapsed-duration versus wall-clock shift semantics
+- start-tolerance handling around shift boundaries
+- missing log-off inference
+- neutral time-beyond-scheduled-end measurement for post-shift attendance
 
 ## Next Priorities
 
