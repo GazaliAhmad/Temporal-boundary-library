@@ -46,7 +46,7 @@ The library is not responsible for:
 - embedding domain-specific business meaning into the core API
 - replacing downstream application logic
 
-Use [use-cases.md](./use-cases.md) as the filter for future additions.
+Use [guides/use-cases.md](./guides/use-cases.md) as the filter for future additions.
 
 ## Core Direction
 
@@ -100,6 +100,7 @@ Focus areas:
 - document expected error types more explicitly
 - standardize wording for invalid boundary resolution failures
 - keep examples clear about what throws and why
+- keep the `guides/` set consistent in scope, so usage, API contract, implementation guidance, and positioning stay clearly separated
 
 ### 2. Real-world example coverage
 
@@ -170,6 +171,13 @@ The documentation should continue to reinforce:
 - `day-boundary` is the main v2 entry point
 - `day-boundary/shifts` is a companion layer
 - the library is a boundary engine, not a general date library
+
+The documentation structure should stay organized under [guides/](./guides/), with a clear split between:
+
+- usage guides such as [guides/v2-usage.md](./guides/v2-usage.md)
+- API and reference documents such as [guides/v2-api.md](./guides/v2-api.md) and [guides/functions-reference.md](./guides/functions-reference.md)
+- implementation guidance such as [guides/sql-dst-safe-queries.md](./guides/sql-dst-safe-queries.md)
+- positioning and fit documents such as [guides/use-cases.md](./guides/use-cases.md) and [guides/business-use-cases.md](./guides/business-use-cases.md)
 
 ## Milestones
 

@@ -7,6 +7,16 @@ That is the default entry point if you need to answer:
 
 > Which operational window does this exact timestamp belong to?
 
+Golden path:
+
+* define a boundary strategy
+* resolve a `[start, end)` operational window
+* query exact instants using that window range
+
+In plain terms:
+
+If your business day starts at `09:00` in London, this library helps you turn any exact timestamp into the correct operational window, then use `window.start` and `window.end` to query records, group reports, or assign work consistently.
+
 ---
 
 ## Quick Start (2 minutes)
@@ -207,8 +217,13 @@ Window IDs are stable across DST transitions and safe for grouping and persisten
 
 See:
 
-* `V2-USAGE.md` for examples
-* `V2-API.md` for full specification
+* [Documentation index](./guides/README.md) for the full documentation map
+* [V2 usage](./guides/v2-usage.md) for examples
+* [V2 API](./guides/v2-api.md) for the full specification
+* [Functions reference](./guides/functions-reference.md) for the compact reference sheet
+* [SQL DST-safe queries](./guides/sql-dst-safe-queries.md) for the implementation query pattern
+* [Business use cases](./guides/business-use-cases.md) for business framing
+* [Use cases](./guides/use-cases.md) for positioning and fit
 
 ---
 
@@ -295,19 +310,29 @@ The field name remains `overtime` for API stability. In this library it is a neu
 
 ## Examples
 
-Included browser examples:
+Browser examples are available in the GitHub repository and are not included in the published npm package.
 
-* **Toy App** → basic boundary behavior
-* **DST Toy App** → DST transitions and day length
-* **Shift Toy App** → elapsed vs wall-clock differences
-* **Shift Attendance Toy App** → start tolerance, late log-off, missing log-off inference, and time beyond scheduled end
-* **Hijri POC** → real-world shifting boundaries using calendar and prayer-time data
+Available examples:
 
-Run locally:
+* [Toy app](https://github.com/GazaliAhmad/day-boundary/tree/main/examples/day-boundary-toy-app) → basic boundary behavior
+* [DST toy app](https://github.com/GazaliAhmad/day-boundary/tree/main/examples/day-boundary-dst-toy-app) → DST transitions and day length
+* [Shift toy app](https://github.com/GazaliAhmad/day-boundary/tree/main/examples/day-boundary-shift-toy-app) → elapsed vs wall-clock differences
+* [Shift attendance toy app](https://github.com/GazaliAhmad/day-boundary/tree/main/examples/day-boundary-shift-attendance-toy-app) → start tolerance, late log-off, missing log-off inference, and time beyond scheduled end
+* [Delivery shift toy app](https://github.com/GazaliAhmad/day-boundary/tree/main/examples/day-boundary-delivery-shift-toy-app) → rider online/offline windows, inferred route closure, and time beyond the scheduled service window
+* [Hijri POC](https://github.com/GazaliAhmad/day-boundary/tree/main/examples/day-boundary-hijri-poc) → real-world shifting boundaries using calendar and prayer-time data
+
+To run them locally from the repository root:
 
 ```bash
 python -m http.server 8000
 ```
+
+More guides:
+
+* [Examples README](https://github.com/GazaliAhmad/day-boundary/blob/main/examples/README.md) for local example URLs
+* [Documentation index](./guides/README.md) for the full documentation map
+* [SQL DST-safe queries](./guides/sql-dst-safe-queries.md) for implementation guidance
+* [Business use cases](./guides/business-use-cases.md) for business use-case framing
 
 ---
 

@@ -1,4 +1,4 @@
-# V2 Functions Reference
+# V2 functions reference
 
 This file lists the functions and classes currently defined in the v2 source.
 
@@ -10,7 +10,13 @@ It includes:
 
 It does not cover the archived v1 API line.
 
-## Public API Table
+Related guides:
+
+- [V2 Usage](./v2-usage.md) for practical examples
+- [V2 API](./v2-api.md) for the formal API contract
+- [Archived v1 Usage](./v1-usage-archive.md) for the older `Date`-based line
+
+## Public API table
 
 | Library | Name | Kind | Exported from | Notes |
 | --- | --- | --- | --- | --- |
@@ -30,7 +36,7 @@ It does not cover the archived v1 API line.
 | Shifts v2 | `resolveShiftStart` | function | `day-boundary/shifts` | Resolve a shift start against business-defined early/late tolerance windows |
 | Shifts v2 | `resolveShiftEnd` | function | `day-boundary/shifts` | Resolve end-of-shift status, missing log-off inference, and time beyond scheduled end |
 
-## Main v2 Library — Internal Source Helpers and Functions
+## Main v2 library — internal source helpers and functions
 
 These functions are defined in `lib/day-boundary-v2.js`.
 
@@ -72,7 +78,7 @@ Some are public exports, while others are internal helpers used by the exported 
 
 `groupByWindow(items, getInstant, strategy)`
 
-## Main v2 Library — Classes and Methods
+## Main v2 library — classes and methods
 
 These classes are defined in `lib/day-boundary-v2.js`.
 
@@ -98,7 +104,7 @@ These classes are defined in `lib/day-boundary-v2.js`.
 
 `getWindowForInstant(instant)`
 
-## Shifts Companion Library — All Functions
+## Shifts companion library — all functions
 
 These functions are exported from `lib/day-boundary-shifts-v2.js` and implemented in `lib/shifts/`.
 
@@ -118,7 +124,7 @@ These functions are exported from `lib/day-boundary-shifts-v2.js` and implemente
 
 `resolveShiftEnd(logOffTime, scheduledShiftEnd, options)`
 
-## Everything in One Consolidated List
+## Everything in one consolidated list
 
 ### Total functions (main + shifts): 20
 

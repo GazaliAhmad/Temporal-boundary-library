@@ -1,8 +1,14 @@
-# V2 API Spec
+# V2 API
 
 This document defines the v2 API for `day-boundary`.
 
 The goal of v2 is to make the library truly global by moving from `Date`-based local assumptions to `Temporal`-based, time-zone-aware window resolution.
+
+Related guides:
+
+- [V2 Usage](./v2-usage.md) for practical usage examples
+- [Functions Reference](./functions-reference.md) for the symbol inventory
+- [Use Cases](./use-cases.md) for positioning and fit
 
 ## Design goals
 
@@ -31,7 +37,7 @@ A boundary window is the interval:
 
 In v2, boundaries are resolved in an explicit IANA time zone and returned as `Temporal.ZonedDateTime`.
 
-Proposed shape:
+Shape:
 
 ```ts
 type BoundaryWindow = {
@@ -59,7 +65,7 @@ v2 distinguishes between:
 - wall-clock local date/time: `Temporal.PlainDateTime`
 - zone-aware exact/local value: `Temporal.ZonedDateTime`
 
-The library should do its core comparison, grouping, and progress calculations using exact time semantics.
+The library does its core comparison, grouping, and progress calculations using exact time semantics.
 
 ## Package entry
 
@@ -293,7 +299,7 @@ Example:
 
 ## DST and time zone behavior
 
-v2 must explicitly support:
+v2 explicitly supports:
 
 - IANA time zones such as `Asia/Singapore`, `Europe/London`, `America/New_York`
 - DST transitions
@@ -310,7 +316,7 @@ Rules:
 - Exact-time calculations should compare instants, not wall-clock fields.
 - Public APIs should avoid offset math and rely on Temporal's zone resolution behavior.
 
-## Shift Semantics
+## Shift semantics
 
 For shift-based domains such as hospitals, nursing care, transport, and factory work, v2 must keep two distinct meanings separate:
 
@@ -354,7 +360,7 @@ Rules:
 
 ## Error behavior
 
-v2 should throw when:
+v2 throws when:
 
 - a strategy is invalid
 - a required time zone is missing or invalid
@@ -400,18 +406,9 @@ v2:
 - `DailyBoundaryStrategy` remains conceptually the same but now resolves boundaries with `Temporal`
 - `groupByWindow`, `isSameWindow`, `getWindowProgress`, and `getWindowId` keep similar roles
 
-## Open questions
+## Design decisions
 
-These points should be decided before implementation:
-
-1. Should the package ship with the `@js-temporal/polyfill` as a peer dependency, direct dependency, or leave it to the consumer?
-2. Should `groupByWindow` support optional sorting by window start?
-3. Should there be a small companion package for label mapping patterns, or should that stay fully application-side?
-4. Should there be additional helper overloads for convenience, outside the strict Temporal-only core?
-
-## Decisions made
-
-The following design decisions are now locked in for v2:
+The following design decisions define the current v2 line:
 
 1. `BoundaryWindow.start` and `BoundaryWindow.end` use `Temporal.ZonedDateTime`.
 2. Exact comparisons and duration math use `toInstant()` semantics internally.
@@ -419,7 +416,7 @@ The following design decisions are now locked in for v2:
 
 ## Current recommendation
 
-The current implementation direction is:
+The current implementation is:
 
 - core window values use `Temporal.ZonedDateTime`
 - exact comparisons use `toInstant()`

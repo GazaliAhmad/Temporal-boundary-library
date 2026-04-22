@@ -6,6 +6,17 @@ The format is based on Keep a Changelog, and this project aims to follow Semanti
 
 Note: the historical `1.0.0` section below documents the internal baseline for the archived v1 API line. It was not published as a package release. The first public package release was `2.0.0`.
 
+## [2.1.1] - 2026-04-22
+
+### Changed
+
+- Reorganized the longer-form documentation into `guides/`, moving the v2 usage/API docs, archived v1 usage guide, functions reference, and use-case material into a single documentation area with normalized filenames.
+- Added a `guides/README.md` index and updated `README.md`, `ROADMAP.md`, and package-published file paths to align with the new documentation structure.
+- Tightened the documentation split so business framing lives in `guides/business-use-cases.md`, implementation guidance lives in `guides/sql-dst-safe-queries.md`, and API usage/reference remain separate.
+- Standardized guide markup, cross-links, heading capitalization, and human-readable Markdown link labels across `README.md` and the `guides/` set for better consistency and navigation.
+- Added a delivery-operations browser example alongside the shift attendance toy app, showing rider online/offline windows, inferred closure, and post-window time handling with `day-boundary/shifts`.
+- Kept browser examples in the GitHub repository while removing `examples/` from the published npm tarball, with `README.md` updated to use direct GitHub links for the hosted demos.
+
 ## [2.1.0] - 2026-04-21
 
 ### Added

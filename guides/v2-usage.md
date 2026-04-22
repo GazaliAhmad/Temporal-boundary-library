@@ -1,4 +1,4 @@
-# V2 Usage
+# V2 usage
 
 This file shows how to use the v2 API exported from `day-boundary`.
 
@@ -8,6 +8,13 @@ v2 is the explicit time-zone-aware path:
 - requires explicit IANA time zones
 - handles DST and non-24-hour windows correctly
 - returns `Temporal.ZonedDateTime` windows
+
+Related guides:
+
+- [V2 API](./v2-api.md) for the full API contract
+- [Functions Reference](./functions-reference.md) for the public and internal symbol inventory
+- [SQL DST-Safe Queries](./sql-dst-safe-queries.md) for database-query patterns
+- [Business Use Cases](./business-use-cases.md) for scenario framing
 
 ## Install
 
@@ -223,7 +230,7 @@ const id = getWindowId(window);
 console.log(id);
 ```
 
-## Shift Work Note
+## Shift work note
 
 If you are building for shift workers or hospital care, treat these as two separate business rules:
 

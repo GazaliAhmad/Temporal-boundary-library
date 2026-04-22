@@ -1,6 +1,6 @@
 {
   "name": "day-boundary",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "JavaScript library for non-midnight operational day boundaries, DST-safe Temporal window resolution, and shift-aware time-zone logic.",
   "type": "module",
   "main": "./lib/day-boundary-v2.js",
@@ -25,13 +25,11 @@
     "lib/day-boundary-v2.js",
     "lib/day-boundary-shifts-v2.js",
     "lib/shifts/",
-    "examples/",
     "README.md",
-    "FUNCTIONS.md",
+    "LICENSE",
     "IP-NOTICE.md",
     "CHANGELOG.md",
-    "V2-API.md",
-    "V2-USAGE.md"
+    "guides/"
   ],
   "scripts": {
     "test": "node test/run-tests.js",
