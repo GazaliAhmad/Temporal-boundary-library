@@ -110,6 +110,9 @@ That is the primitive.
 
 You define a boundary rule, resolve the surrounding boundary events, and work from the resulting window.
 
+For broader conceptual framing, see the
+[project wiki](https://github.com/GazaliAhmad/day-boundary/wiki).
+
 ---
 
 ## Critical DST behavior (read this)

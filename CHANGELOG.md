@@ -8,11 +8,16 @@ Note: the historical `1.0.0` section below documents the internal baseline for t
 
 ## [3.0.2] - 2026-04-27
 
+### Added
+
+- Created the GitHub project wiki for broader conceptual documentation and background material.
+
 ### Changed
 
 - Simplified the published npm package so installed consumers now see a single canonical runtime surface under `lib/` with no duplicated `ver-03` runtime files.
 - Stopped publishing the `guides/` documentation folder in the npm tarball and updated README documentation links to point at the GitHub-hosted guides instead.
 - Inlined the current implementation into `lib/day-boundary.js` and `lib/window-durations.js` so the published package no longer exposes internal version-folder indirection.
+- Updated the `README.md` Core Idea section to link to the wiki as a conceptual pointer.
 
 ## [3.0.1] - 2026-04-27
 
