@@ -2,7 +2,7 @@
 
 Assign timestamps to operational windows when midnight breaks your logic.
 
-This README describes the current `day-boundary` `3.0.2` package line.
+This README describes the current `day-boundary` `3.0.3` package line.
 The root package export maps to the stable current API entry.
 
 Core primitive:
@@ -39,6 +39,21 @@ duration behavior now lives in the root API with neutral names:
 
 Shift, attendance, overtime, delivery, SLA, and overrun labels are business
 policy decisions layered above the boundary-window primitive.
+
+Common migration failures are now guarded with explicit runtime errors.
+
+If older code passes legacy input shapes, the library now fails fast and points
+at the v3 replacement instead of surfacing only a generic type or `timeZone`
+error.
+
+The most common legacy upgrades are:
+
+* `new FixedTimeBoundaryStrategy({ startHour: 9, startMinute: 0 })` -> `new FixedTimeBoundaryStrategy({ timeZone: 'Asia/Singapore', boundaryTime: '09:00' })`
+* `new FixedTimeBoundaryStrategy({ hour: 6, minute: 0, second: 0 })` -> `new FixedTimeBoundaryStrategy({ timeZone: 'Asia/Singapore', boundaryTime: '06:00' })`
+* `new DailyBoundaryStrategy({ getBoundaryForDate(...) { ... } })` -> `new DailyBoundaryStrategy({ timeZone: 'Asia/Singapore', getBoundaryForDate(date, context) { ... } })`
+* `getBoundaryForDate(...)` returning `Date`, string, or number -> return `Temporal.ZonedDateTime`
+* `getWindowForInstant(dateOrString, strategy)` -> convert to `Temporal.Instant` first
+* `getWindowForPlainDateTime('2026-10-25T01:30:00', strategy)` -> `getWindowForPlainDateTime(Temporal.PlainDateTime.from('2026-10-25T01:30:00'), strategy)`
 
 ---
 
@@ -256,7 +271,7 @@ See:
 
 Archive note:
 
-* `day-boundary` → current `3.0.2` root API
+* `day-boundary` → current `3.0.3` root API
 * `ver-01`, `ver-02`, and `ver-03` → repository history folders only, not part of the published npm package
 * if you need the old v2 package behavior, use `day-boundary@2.x`
 

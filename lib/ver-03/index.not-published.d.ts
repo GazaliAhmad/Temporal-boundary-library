@@ -1,3 +1,5 @@
+// Repository archive only. This file is not part of the published npm package surface.
+
 import { Temporal } from "@js-temporal/polyfill";
 
 export type ExactTime = Temporal.Instant | Temporal.ZonedDateTime;
@@ -7,6 +9,8 @@ export type BoundaryDisambiguation =
   | "earlier"
   | "later"
   | "reject";
+
+export type BoundaryTimeInput = string | Temporal.PlainTime;
 
 export interface DayBoundaryConfig {
   readonly timeZone: string;
@@ -20,9 +24,18 @@ export interface BoundaryWindow {
 }
 
 export interface FixedTimeBoundaryStrategyConfig extends DayBoundaryConfig {
-  readonly boundaryTime?: Temporal.PlainTime;
+  readonly boundaryTime?: BoundaryTimeInput;
   readonly label?: string;
   readonly disambiguation?: BoundaryDisambiguation;
+  readonly hour?: never;
+  readonly minute?: never;
+  readonly second?: never;
+  readonly millisecond?: never;
+  readonly microsecond?: never;
+  readonly nanosecond?: never;
+  readonly startHour?: never;
+  readonly startMinute?: never;
+  readonly startSecond?: never;
 }
 
 export interface DailyBoundaryResolverContext {

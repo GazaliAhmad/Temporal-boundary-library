@@ -1,6 +1,6 @@
 # Roadmap
 
-This roadmap reflects the current state of `day-boundary` after the `3.0.0` release.
+This roadmap reflects the current state of `day-boundary` in the `3.0.3` line.
 
 The library is now positioned as:
 
@@ -19,6 +19,7 @@ The repo currently includes:
 - a stable main API entry in [lib/day-boundary.js](./lib/day-boundary.js)
 - neutral boundary-window duration helpers in [lib/window-durations.js](./lib/window-durations.js)
 - a test suite covering boundary windows, DST-sensitive behavior, and duration semantics
+- explicit runtime migration guards for common legacy input shapes so older v1-style usage fails with targeted upgrade guidance
 - browser examples in [examples/](./examples/)
 - npm packaging metadata for the current `day-boundary` `3.x` line
 
@@ -128,6 +129,7 @@ Before broader adoption, keep tightening the publishing story.
 Focus areas:
 
 - keep package metadata aligned with docs
+- keep legacy migration guidance explicit and consistent across runtime errors, README examples, and guides
 - periodically verify `npm pack` contents
 - keep the public import story simple and stable
 - make browser/polyfill guidance easy to follow

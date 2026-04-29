@@ -1,6 +1,6 @@
 {
   "name": "day-boundary",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "description": "JavaScript library for non-midnight operational boundaries, DST-safe Temporal window resolution, and boundary-window duration logic.",
   "type": "module",
   "main": "./lib/day-boundary.js",

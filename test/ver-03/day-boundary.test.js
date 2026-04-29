@@ -41,6 +41,62 @@ function zonedBoundary(timeZone, dateString, timeString) {
 }
 
 export function runDayBoundaryV2Tests(run) {
+  run("v2 getWindowForInstant rejects legacy Date inputs with migration guidance", () => {
+    const strategy = new FixedTimeBoundaryStrategy({
+      timeZone: "Asia/Singapore",
+      boundaryTime: "09:00",
+    });
+
+    assert.throws(
+      () => getWindowForInstant(new Date("2026-04-19T01:00:00Z"), strategy),
+      (error) =>
+        error instanceof TypeError &&
+        error.message ===
+          "Legacy Date, string, and numeric timestamp inputs are no longer accepted in v3. Convert the value to a Temporal.Instant or Temporal.ZonedDateTime first.",
+    );
+  });
+
+  run("v2 getWindowForPlainDateTime rejects legacy string inputs with migration guidance", () => {
+    const strategy = new FixedTimeBoundaryStrategy({
+      timeZone: "Asia/Singapore",
+      boundaryTime: "09:00",
+    });
+
+    assert.throws(
+      () => getWindowForPlainDateTime("2026-04-19T09:00:00", strategy),
+      (error) =>
+        error instanceof TypeError &&
+        error.message ===
+          "Legacy Date, string, and numeric timestamp inputs are no longer accepted in v3. Use Temporal.PlainDateTime.from(...) for wall-clock input, or convert the value to a Temporal.Instant and call getWindowForInstant(...).",
+    );
+  });
+
+  run("v2 FixedTimeBoundaryStrategy rejects legacy boundary keys before timeZone validation", () => {
+    assert.throws(
+      () => new FixedTimeBoundaryStrategy({ hour: 6, minute: 0, second: 0 }),
+      (error) =>
+        error instanceof TypeError &&
+        error.message ===
+          'FixedTimeBoundaryStrategy no longer accepts legacy boundary keys ("hour", "minute", "second") in v3. Use { timeZone: "Asia/Singapore", boundaryTime: "06:00" } instead.',
+    );
+  });
+
+  run("v2 FixedTimeBoundaryStrategy rejects mixed legacy and current fixed-time options", () => {
+    assert.throws(
+      () =>
+        new FixedTimeBoundaryStrategy({
+          timeZone: "Asia/Singapore",
+          hour: 6,
+          minute: 0,
+          boundaryTime: "06:00",
+        }),
+      (error) =>
+        error instanceof TypeError &&
+        error.message ===
+          'FixedTimeBoundaryStrategy no longer accepts legacy boundary keys ("hour", "minute") in v3. Use { timeZone: "Asia/Singapore", boundaryTime: "06:00" } instead.',
+    );
+  });
+
   run("v2 FixedTimeBoundaryStrategy resolves the previous window before the boundary", () => {
     const strategy = new FixedTimeBoundaryStrategy({
       timeZone: "Asia/Singapore",
@@ -179,6 +235,21 @@ export function runDayBoundaryV2Tests(run) {
     );
   });
 
+  run("v2 DailyBoundaryStrategy rejects legacy constructor usage without an explicit timeZone", () => {
+    assert.throws(
+      () =>
+        new DailyBoundaryStrategy({
+          getBoundaryForDate() {
+            return Temporal.ZonedDateTime.from("2026-04-19T19:00:00+08:00[Asia/Singapore]");
+          },
+        }),
+      (error) =>
+        error instanceof TypeError &&
+        error.message ===
+          'DailyBoundaryStrategy requires an explicit non-empty IANA timeZone in v3. Use { timeZone: "Asia/Singapore", getBoundaryForDate(date, context) { return Temporal.ZonedDateTime.from(...); } } instead.',
+    );
+  });
+
   run("v2 DailyBoundaryStrategy throws when the resolver does not return ZonedDateTime", () => {
     const strategy = new DailyBoundaryStrategy({
       timeZone: "Asia/Singapore",
@@ -190,6 +261,23 @@ export function runDayBoundaryV2Tests(run) {
     assert.throws(
       () => getWindowForInstant(Temporal.Instant.from("2026-04-19T10:00:00Z"), strategy),
       TypeError,
+    );
+  });
+
+  run("v2 DailyBoundaryStrategy rejects legacy Date resolver results with migration guidance", () => {
+    const strategy = new DailyBoundaryStrategy({
+      timeZone: "Asia/Singapore",
+      getBoundaryForDate() {
+        return new Date("2026-04-19T11:00:00Z");
+      },
+    });
+
+    assert.throws(
+      () => getWindowForInstant(Temporal.Instant.from("2026-04-19T10:00:00Z"), strategy),
+      (error) =>
+        error instanceof TypeError &&
+        error.message ===
+          "DailyBoundaryStrategy#getBoundaryForDate no longer accepts legacy Date, string, or numeric results in v3. Return a Temporal.ZonedDateTime in the strategy time zone instead.",
     );
   });
 

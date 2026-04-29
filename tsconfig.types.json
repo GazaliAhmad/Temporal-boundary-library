@@ -8,7 +8,6 @@
     "skipLibCheck": false
   },
   "files": [
-    "index.d.ts",
-    "index-v2.d.ts"
+    "index.d.ts"
   ]
 }

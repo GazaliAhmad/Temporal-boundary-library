@@ -419,6 +419,121 @@ current API:
 - `DailyBoundaryStrategy` remains conceptually the same but now resolves boundaries with `Temporal`
 - `groupByWindow`, `isSameWindow`, `getWindowProgress`, and `getWindowId` keep similar roles
 
+### Common legacy inputs and explicit failures
+
+The current runtime guards the most common legacy inputs with targeted migration
+errors. The goal is to make upgrade failures explicit on first run.
+
+#### `FixedTimeBoundaryStrategy`
+
+Legacy shapes that now fail explicitly:
+
+- `new FixedTimeBoundaryStrategy({ startHour: 9, startMinute: 0 })`
+- `new FixedTimeBoundaryStrategy({ hour: 6, minute: 0, second: 0 })`
+
+Use instead:
+
+```js
+new FixedTimeBoundaryStrategy({
+  timeZone: 'Asia/Singapore',
+  boundaryTime: '06:00',
+});
+```
+
+Runtime behavior:
+
+- legacy fixed-time keys such as `startHour`, `startMinute`, `hour`, `minute`, and `second` now throw a targeted migration error
+- `timeZone` remains required even when the old shape is detected
+
+#### `DailyBoundaryStrategy`
+
+Legacy shapes that now fail explicitly:
+
+- `new DailyBoundaryStrategy({ getBoundaryForDate(...) { ... } })`
+- `getBoundaryForDate(...)` returning `Date`
+- `getBoundaryForDate(...)` returning a string timestamp
+- `getBoundaryForDate(...)` returning a numeric timestamp
+
+Use instead:
+
+```js
+new DailyBoundaryStrategy({
+  timeZone: 'Asia/Singapore',
+  getBoundaryForDate(date, context) {
+    return Temporal.ZonedDateTime.from({
+      timeZone: context.timeZone,
+      year: date.year,
+      month: date.month,
+      day: date.day,
+      hour: 19,
+      minute: 0,
+    });
+  },
+});
+```
+
+Runtime behavior:
+
+- missing `timeZone` on a `DailyBoundaryStrategy` constructor now throws an explicit v3 migration error when a resolver is present
+- legacy resolver return values such as `Date`, string, and number now throw an explicit "return `Temporal.ZonedDateTime` instead" error
+
+#### Exact-time inputs
+
+Legacy inputs that now fail explicitly:
+
+- `getWindowForInstant(new Date(), strategy)`
+- `getWindowForInstant('2026-04-19T01:00:00Z', strategy)`
+- `getWindowForInstant(1713498000000, strategy)`
+
+Use instead:
+
+```js
+const instant = Temporal.Instant.from('2026-04-19T01:00:00Z');
+const window = getWindowForInstant(instant, strategy);
+```
+
+Runtime behavior:
+
+- legacy `Date`, string, and numeric timestamp inputs now throw a targeted migration error telling the caller to convert to `Temporal.Instant` or `Temporal.ZonedDateTime` first
+
+#### Wall-clock local inputs
+
+Legacy inputs that now fail explicitly:
+
+- `getWindowForPlainDateTime('2026-10-25T01:30:00', strategy)`
+- `getWindowForPlainDateTime(new Date(), strategy)`
+
+Use instead:
+
+```js
+const localInput = Temporal.PlainDateTime.from('2026-10-25T01:30:00');
+const window = getWindowForPlainDateTime(localInput, strategy);
+```
+
+Runtime behavior:
+
+- legacy `Date`, string, and numeric inputs now throw a targeted migration error telling the caller to use `Temporal.PlainDateTime.from(...)` for wall-clock input, or `getWindowForInstant(...)` for exact timestamps
+
+#### Removed or renamed entry points
+
+Legacy entry points:
+
+- `getActiveWindow(now, strategy)`
+- `getWindowForTimestamp(timestamp, strategy)`
+- `day-boundary/shifts`
+- `compareShiftEndings(...)`
+- `getShiftEndByElapsedDuration(...)`
+- `getShiftEndByWallClockDuration(...)`
+
+Use instead:
+
+- `getWindowForInstant(Temporal.Now.instant(), strategy)`
+- `getWindowForInstant(...)` or `getWindowForPlainDateTime(...)`
+- root `day-boundary` entry
+- `compareWindowEndings(...)`
+- `getWindowEndByElapsedDuration(...)`
+- `getWindowEndByWallClockDuration(...)`
+
 ## Design decisions
 
 The following design decisions define the current line:

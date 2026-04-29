@@ -6,6 +6,17 @@ The format is based on Keep a Changelog, and this project aims to follow Semanti
 
 Note: the historical `1.0.0` section below documents the internal baseline for the archived v1 API line. It was not published as a package release. The first public package release was `2.0.0`.
 
+## [3.0.3] - 2026-04-29
+
+### Changed
+
+- Added explicit v3 migration errors for common legacy inputs so older `Date`, string, numeric timestamp, and legacy strategy option shapes fail fast with targeted upgrade guidance instead of generic validation errors.
+- Added explicit runtime guards for legacy `FixedTimeBoundaryStrategy` option keys such as `startHour`, `startMinute`, `hour`, `minute`, and `second`.
+- Added explicit runtime guards for `DailyBoundaryStrategy` legacy usage without `timeZone` and for legacy resolver return values such as `Date`, string, and number.
+- Tightened the TypeScript declaration files so `boundaryTime` matches the runtime `string | Temporal.PlainTime` input and legacy fixed-time option keys are rejected earlier in TypeScript object literals.
+- Moved the old repo-only `index-v2.d.ts` declaration file into the archived `lib/ver-03/` area as a clearly non-published file, and updated the typecheck configuration to validate the published `index.d.ts` surface by default.
+- Expanded the `README.md` and API migration guide with a focused legacy-input migration section that maps the most common v1-style inputs to the supported v3 Temporal-based replacements.
+
 ## [3.0.2] - 2026-04-27
 
 ### Added
