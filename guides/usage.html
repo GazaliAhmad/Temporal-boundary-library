@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>day-boundary Usage Guide</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <p class="eyebrow">Guide</p>
+        <h1>Current Usage</h1>
+        <p class="lede">
+          The current <strong>3.x</strong> API is the explicit time-zone-aware
+          path for resolving operational windows without assuming midnight.
+        </p>
+        <div class="hero-actions">
+          <a class="action-link" href="./index.html">Guides Hub</a>
+          <a class="action-link" href="./api.html">API Spec</a>
+          <a class="action-link" href="../examples/day-boundary-operational-day-demo/">Operational Day Demo</a>
+        </div>
+        <div class="callout">
+          <strong>Core idea:</strong> use <code>Temporal</code>, keep time zones
+          explicit, and let the library resolve true <code>[start, end)</code>
+          operational windows even on DST days.
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <div class="panel-head">
+            <h2>What This API Assumes</h2>
+            <span class="badge">Current contract</span>
+          </div>
+          <ul class="bullet-list">
+            <li>Uses <code>Temporal</code></li>
+            <li>Requires explicit IANA time zones</li>
+            <li>Handles DST and non-24-hour windows correctly</li>
+            <li>Returns <code>Temporal.ZonedDateTime</code> windows</li>
+          </ul>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Keep Going</h2>
+            <span class="badge">Main next step</span>
+          </div>
+          <p class="muted">
+            Once the usage flow makes sense, the next document most people need
+            is the full API spec.
+          </p>
+          <div class="nav-grid">
+            <a class="nav-card" href="./api.html">
+              <strong>API</strong>
+              <p>Detailed public API specification.</p>
+            </a>
+          </div>
+          <p class="muted">
+            Supporting references:
+          </p>
+          <ul class="link-list">
+            <li><a href="./functions-reference.html">Functions Reference</a></li>
+            <li><a href="./sql-dst-safe-queries.html">SQL DST-Safe Queries</a></li>
+            <li><a href="./business-use-cases.html">Business Use Cases</a></li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="stack">
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Install</h2>
+            <div class="panel-actions">
+              <span class="badge">Node 18+</span>
+              <button class="copy-button" data-copy-target="install-code" type="button">Copy</button>
+            </div>
+          </div>
+          <p class="section-copy">
+            The package includes <code>@js-temporal/polyfill</code> as a
+            dependency and publishes a strict declaration file for
+            <code>day-boundary</code>.
+          </p>
+          <div class="facts">
+            <div>
+              <div class="fact-label">Runtime</div>
+              <div>Node 18 or newer</div>
+            </div>
+            <div>
+              <div class="fact-label">Module format</div>
+              <div>ESM only</div>
+            </div>
+            <div>
+              <div class="fact-label">Typed surface</div>
+              <div>Temporal-only, not legacy Date/string/number timestamps</div>
+            </div>
+            <div>
+              <div class="fact-label">Direct Temporal import</div>
+              <div class="mono">import { Temporal } from '@js-temporal/polyfill';</div>
+            </div>
+          </div>
+          <pre><code id="install-code">npm install day-boundary</code></pre>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Node Usage</h2>
+            <div class="panel-actions">
+              <span class="badge">Exact time</span>
+              <button class="copy-button" data-copy-target="node-code" type="button">Copy</button>
+            </div>
+          </div>
+          <p class="section-copy">
+            Start here when you have an exact timestamp and need the containing
+            operational window plus fractional progress through that window.
+          </p>
+          <pre><code id="node-code">import { Temporal } from '@js-temporal/polyfill';
+import {
+  FixedTimeBoundaryStrategy,
+  getWindowForInstant,
+  getWindowProgress,
+} from 'day-boundary';
+
+const strategy = new FixedTimeBoundaryStrategy({
+  timeZone: 'Europe/London',
+  boundaryTime: '09:00',
+});
+
+const now = Temporal.Now.instant();
+const window = getWindowForInstant(now, strategy);
+const progress = getWindowProgress(now, window);
+
+console.log(window.start.toString());
+console.log(window.end.toString());
+console.log(progress);</code></pre>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Browser Usage</h2>
+            <div class="panel-actions">
+              <span class="badge">Import map</span>
+              <button class="copy-button" data-copy-target="browser-code" type="button">Copy</button>
+            </div>
+          </div>
+          <p class="section-copy">
+            In browsers, native <code>Temporal</code> is not universal yet, so
+            use the polyfill with an import map if you are serving files
+            directly without a bundler.
+          </p>
+          <pre><code id="browser-code">&lt;script type="importmap"&gt;
+{
+  "imports": {
+    "@js-temporal/polyfill": "./node_modules/@js-temporal/polyfill/dist/index.esm.js",
+    "jsbi": "./node_modules/jsbi/dist/jsbi.mjs"
+  }
+}
+&lt;/script&gt;
+
+&lt;script type="module"&gt;
+  import { Temporal } from '@js-temporal/polyfill';
+  import {
+    FixedTimeBoundaryStrategy,
+    getWindowForInstant,
+  } from './lib/day-boundary.js';
+
+  const strategy = new FixedTimeBoundaryStrategy({
+    timeZone: 'Asia/Singapore',
+    boundaryTime: '18:00',
+  });
+
+  const window = getWindowForInstant(Temporal.Now.instant(), strategy);
+  console.log(window.start.toString(), window.end.toString());
+&lt;/script&gt;</code></pre>
+        </article>
+
+        <section class="grid">
+          <article class="panel">
+            <div class="panel-head">
+              <h2><code>FixedTimeBoundaryStrategy</code></h2>
+              <div class="panel-actions">
+                <span class="badge">Same boundary daily</span>
+                <button class="copy-button" data-copy-target="fixed-code" type="button">Copy</button>
+              </div>
+            </div>
+            <p class="section-copy">
+              Use this when the boundary is the same wall-clock time every day
+              in a time zone.
+            </p>
+            <pre><code id="fixed-code">import { Temporal } from '@js-temporal/polyfill';
+import {
+  FixedTimeBoundaryStrategy,
+  getWindowForInstant,
+} from 'day-boundary';
+
+const strategy = new FixedTimeBoundaryStrategy({
+  timeZone: 'America/New_York',
+  boundaryTime: Temporal.PlainTime.from('09:00'),
+});
+
+const instant = Temporal.Instant.from('2026-11-01T13:30:00Z');
+const window = getWindowForInstant(instant, strategy);
+
+console.log(window.start.toString());
+console.log(window.end.toString());</code></pre>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <h2><code>DailyBoundaryStrategy</code></h2>
+              <div class="panel-actions">
+                <span class="badge">Boundary changes by date</span>
+                <button class="copy-button" data-copy-target="daily-code" type="button">Copy</button>
+              </div>
+            </div>
+            <p class="section-copy">
+              Use this when the boundary is driven by a timetable or other
+              date-specific schedule.
+            </p>
+            <pre><code id="daily-code">import { Temporal } from '@js-temporal/polyfill';
+import {
+  DailyBoundaryStrategy,
+  getWindowForInstant,
+} from 'day-boundary';
+
+const boundaryByDate = {
+  '2026-04-18': '18:59',
+  '2026-04-19': '19:00',
+  '2026-04-20': '19:01',
+};
+
+const strategy = new DailyBoundaryStrategy({
+  timeZone: 'Asia/Singapore',
+  getBoundaryForDate(date, context) {
+    const [hour, minute] = boundaryByDate[date.toString()].split(':').map(Number);
+
+    return Temporal.ZonedDateTime.from({
+      timeZone: context.timeZone,
+      year: date.year,
+      month: date.month,
+      day: date.day,
+      hour,
+      minute,
+    });
+  },
+});
+
+const window = getWindowForInstant(
+  Temporal.Instant.from('2026-04-19T10:30:00Z'),
+  strategy
+);
+
+console.log(window.start.toString());
+console.log(window.end.toString());</code></pre>
+          </article>
+        </section>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Helper Entry Points</h2>
+            <span class="badge">Choose the right input</span>
+          </div>
+          <div class="grid">
+            <div>
+              <h3><code>getWindowForInstant</code></h3>
+              <p class="muted">Best when you already have exact time.</p>
+              <pre><code>const window = getWindowForInstant(Temporal.Now.instant(), strategy);</code></pre>
+            </div>
+            <div>
+              <h3><code>getWindowForZonedDateTime</code></h3>
+              <p class="muted">Best when you already have a <code>Temporal.ZonedDateTime</code>.</p>
+              <pre><code>const zdt = Temporal.ZonedDateTime.from('2026-10-24T12:00:00+01:00[Europe/London]');
+const window = getWindowForZonedDateTime(zdt, strategy);</code></pre>
+            </div>
+            <div>
+              <h3><code>getWindowForPlainDateTime</code></h3>
+              <p class="muted">Best when the user enters wall-clock local time.</p>
+              <pre><code>const localInput = Temporal.PlainDateTime.from('2026-10-25T01:30:00');
+const window = getWindowForPlainDateTime(localInput, strategy, {
+  disambiguation: 'earlier',
+});</code></pre>
+            </div>
+            <div>
+              <h3><code>getWindowProgress</code></h3>
+              <p class="muted">Progress is based on exact elapsed time, not assumed 24-hour local days.</p>
+              <pre><code>const progress = getWindowProgress(Temporal.Now.instant(), window);
+console.log(`${(progress * 100).toFixed(2)}%`);</code></pre>
+            </div>
+            <div>
+              <h3><code>isSameWindow</code></h3>
+              <pre><code>const same = isSameWindow(
+  Temporal.Instant.from('2026-04-19T00:30:00Z'),
+  Temporal.Instant.from('2026-04-19T00:45:00Z'),
+  strategy
+);</code></pre>
+            </div>
+            <div>
+              <h3><code>groupByWindow</code></h3>
+              <pre><code>const grouped = groupByWindow(records, (record) => record.instant, strategy);
+
+for (const group of grouped) {
+  console.log(group.window.start.toString(), group.window.end.toString());
+  console.log(group.items.length);
+}</code></pre>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Boundary Duration Helpers</h2>
+            <div class="panel-actions">
+              <span class="badge">DST-sensitive</span>
+              <button class="copy-button" data-copy-target="duration-code" type="button">Copy</button>
+            </div>
+          </div>
+          <p class="section-copy">
+            If the domain means “8 actual hours” versus “00:00 to 08:00 local
+            wall-clock time”, DST days can produce different end times. The API
+            is designed so you can represent both clearly.
+          </p>
+          <ul class="bullet-list">
+            <li>Use <code>Temporal.Instant</code> when the rule is about exact elapsed duration</li>
+            <li>Use <code>Temporal.ZonedDateTime</code> when the rule is about local scheduled wall-clock time</li>
+          </ul>
+          <pre><code id="duration-code">import { Temporal } from '@js-temporal/polyfill';
+import { compareWindowEndings } from 'day-boundary';
+
+const start = Temporal.ZonedDateTime.from(
+  '2026-10-25T00:00:00+01:00[Europe/London]'
+);
+
+const result = compareWindowEndings(start, { hours: 8 });
+
+console.log(result.elapsedEnd.toString());   // 2026-10-25T07:00:00+00:00[Europe/London]
+console.log(result.wallClockEnd.toString()); // 2026-10-25T08:00:00+00:00[Europe/London]</code></pre>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      for (const button of document.querySelectorAll(".copy-button")) {
+        button.addEventListener("click", async () => {
+          const targetId = button.getAttribute("data-copy-target");
+
+          if (!targetId) {
+            return;
+          }
+
+          const target = document.getElementById(targetId);
+
+          if (!target) {
+            return;
+          }
+
+          try {
+            await navigator.clipboard.writeText(target.textContent ?? "");
+            button.textContent = "Copied";
+          } catch {
+            button.textContent = "Unavailable";
+          }
+
+          window.setTimeout(() => {
+            button.textContent = "Copy";
+          }, 1600);
+        });
+      }
+    </script>
+  </body>
+</html>

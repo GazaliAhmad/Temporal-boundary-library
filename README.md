@@ -2,7 +2,7 @@
 
 Assign timestamps to operational windows when midnight breaks your logic.
 
-This README describes the current `day-boundary` `3.0.3` package line.
+This README describes the current `day-boundary` `3.x` package line.
 The root package export maps to the stable current API entry.
 
 Core primitive:
@@ -28,7 +28,7 @@ If your operation changes over at `09:00` in London, this library helps you turn
 
 ---
 
-## v3.0.x note
+## v3.x note
 
 The v3 line removes the former `day-boundary/shifts` companion API. Boundary-window
 duration behavior now lives in the root API with neutral names:
@@ -182,6 +182,9 @@ This library tells you *which operational window that time belongs to*.
 
 ## Installation
 
+Requires Node `18` or newer.
+This package is ESM-only. Use `import ... from 'day-boundary'`.
+
 ```bash
 npm install day-boundary
 ```
@@ -199,6 +202,13 @@ The typed API is Temporal-only:
 * `Temporal.Duration`
 
 Legacy `Date`, string timestamps, and numeric timestamps are not part of the typed contract.
+
+Validation notes:
+
+* exact-time helpers reject `null` and `undefined`
+* wall-clock helpers reject `null` and `undefined`
+* `timeZone` must be a non-empty IANA time zone identifier
+* `boundaryTime` may be a `Temporal.PlainTime` or a non-empty string such as `'09:00'`
 
 ---
 
@@ -271,7 +281,7 @@ See:
 
 Archive note:
 
-* `day-boundary` → current `3.0.3` root API
+* `day-boundary` → current `3.x` root API
 * `ver-01`, `ver-02`, and `ver-03` → repository history folders only, not part of the published npm package
 * if you need the old v2 package behavior, use `day-boundary@2.x`
 
@@ -329,6 +339,7 @@ Browser examples are available in this repository and are not included in the pu
 
 Available examples:
 
+* [Operational day demo](https://github.com/GazaliAhmad/day-boundary/tree/main/examples/day-boundary-operational-day-demo) → realistic 06:00 operational-day setup in Europe/London, grouped events, and DST duration semantics
 * [API snippets](https://github.com/GazaliAhmad/day-boundary/tree/main/examples/day-boundary-api-snippets) → focused demos for smaller public helpers
 * [Toy app](https://github.com/GazaliAhmad/day-boundary/tree/main/examples/day-boundary-toy-app) → basic boundary behavior
 * [DST toy app](https://github.com/GazaliAhmad/day-boundary/tree/main/examples/day-boundary-dst-toy-app) → DST transitions and day length

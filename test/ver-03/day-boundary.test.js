@@ -40,8 +40,8 @@ function zonedBoundary(timeZone, dateString, timeString) {
   });
 }
 
-export function runDayBoundaryV2Tests(run) {
-  run("v2 getWindowForInstant rejects legacy Date inputs with migration guidance", () => {
+export function runDayBoundaryV3Tests(run) {
+  run("v3 getWindowForInstant rejects legacy Date inputs with migration guidance", () => {
     const strategy = new FixedTimeBoundaryStrategy({
       timeZone: "Asia/Singapore",
       boundaryTime: "09:00",
@@ -56,7 +56,7 @@ export function runDayBoundaryV2Tests(run) {
     );
   });
 
-  run("v2 getWindowForPlainDateTime rejects legacy string inputs with migration guidance", () => {
+  run("v3 getWindowForPlainDateTime rejects legacy string inputs with migration guidance", () => {
     const strategy = new FixedTimeBoundaryStrategy({
       timeZone: "Asia/Singapore",
       boundaryTime: "09:00",
@@ -71,7 +71,48 @@ export function runDayBoundaryV2Tests(run) {
     );
   });
 
-  run("v2 FixedTimeBoundaryStrategy rejects legacy boundary keys before timeZone validation", () => {
+  run("v3 getWindowForInstant rejects null inputs with a typed runtime error", () => {
+    const strategy = new FixedTimeBoundaryStrategy({
+      timeZone: "Asia/Singapore",
+      boundaryTime: "09:00",
+    });
+
+    assert.throws(
+      () => getWindowForInstant(null, strategy),
+      (error) =>
+        error instanceof TypeError &&
+        error.message === "Expected a Temporal.Instant or Temporal.ZonedDateTime.",
+    );
+  });
+
+  run("v3 getWindowForPlainDateTime rejects undefined inputs with a typed runtime error", () => {
+    const strategy = new FixedTimeBoundaryStrategy({
+      timeZone: "Asia/Singapore",
+      boundaryTime: "09:00",
+    });
+
+    assert.throws(
+      () => getWindowForPlainDateTime(undefined, strategy),
+      (error) =>
+        error instanceof TypeError &&
+        error.message === "Expected a Temporal.PlainDateTime.",
+    );
+  });
+
+  run("v3 FixedTimeBoundaryStrategy rejects empty boundaryTime with a library-owned error", () => {
+    assert.throws(
+      () =>
+        new FixedTimeBoundaryStrategy({
+          timeZone: "Asia/Singapore",
+          boundaryTime: "",
+        }),
+      (error) =>
+        error instanceof TypeError &&
+        error.message === "boundaryTime must be a non-empty string or Temporal.PlainTime.",
+    );
+  });
+
+  run("v3 FixedTimeBoundaryStrategy rejects legacy boundary keys before timeZone validation", () => {
     assert.throws(
       () => new FixedTimeBoundaryStrategy({ hour: 6, minute: 0, second: 0 }),
       (error) =>
@@ -81,7 +122,7 @@ export function runDayBoundaryV2Tests(run) {
     );
   });
 
-  run("v2 FixedTimeBoundaryStrategy rejects mixed legacy and current fixed-time options", () => {
+  run("v3 FixedTimeBoundaryStrategy rejects mixed legacy and current fixed-time options", () => {
     assert.throws(
       () =>
         new FixedTimeBoundaryStrategy({
@@ -97,7 +138,7 @@ export function runDayBoundaryV2Tests(run) {
     );
   });
 
-  run("v2 FixedTimeBoundaryStrategy resolves the previous window before the boundary", () => {
+  run("v3 FixedTimeBoundaryStrategy resolves the previous window before the boundary", () => {
     const strategy = new FixedTimeBoundaryStrategy({
       timeZone: "Asia/Singapore",
       boundaryTime: "09:00",
@@ -116,10 +157,10 @@ export function runDayBoundaryV2Tests(run) {
       window.end.toString(),
       "2026-04-19T09:00:00+08:00[Asia/Singapore]",
     );
-    assert.equal(window.metadata.strategy, "fixed-time-v2");
+    assert.equal(window.metadata.strategy, "fixed-time-v3");
   });
 
-  run("v2 FixedTimeBoundaryStrategy resolves a 23-hour window across spring-forward DST", () => {
+  run("v3 FixedTimeBoundaryStrategy resolves a 23-hour window across spring-forward DST", () => {
     const strategy = new FixedTimeBoundaryStrategy({
       timeZone: "Europe/London",
       boundaryTime: "09:00",
@@ -141,7 +182,7 @@ export function runDayBoundaryV2Tests(run) {
     assert.equal(durationHours(window), 23);
   });
 
-  run("v2 FixedTimeBoundaryStrategy resolves a 25-hour window across fall-back DST", () => {
+  run("v3 FixedTimeBoundaryStrategy resolves a 25-hour window across fall-back DST", () => {
     const strategy = new FixedTimeBoundaryStrategy({
       timeZone: "Europe/London",
       boundaryTime: "09:00",
@@ -163,7 +204,7 @@ export function runDayBoundaryV2Tests(run) {
     assert.equal(durationHours(window), 25);
   });
 
-  run("v2 helper entry points resolve the same window identity", () => {
+  run("v3 helper entry points resolve the same window identity", () => {
     const strategy = new FixedTimeBoundaryStrategy({
       timeZone: "Europe/London",
       boundaryTime: "09:00",
@@ -181,7 +222,7 @@ export function runDayBoundaryV2Tests(run) {
     assert.equal(getWindowId(fromInstant), getWindowId(fromPlain));
   });
 
-  run("v2 getWindowProgress uses exact elapsed time across a 25-hour DST window", () => {
+  run("v3 getWindowProgress uses exact elapsed time across a 25-hour DST window", () => {
     const strategy = new FixedTimeBoundaryStrategy({
       timeZone: "Europe/London",
       boundaryTime: "09:00",
@@ -198,7 +239,7 @@ export function runDayBoundaryV2Tests(run) {
     assert.equal(getWindowProgress(midpoint, window), 0.5);
   });
 
-  run("v2 DailyBoundaryStrategy resolves a shifting boundary window", () => {
+  run("v3 DailyBoundaryStrategy resolves a shifting boundary window", () => {
     const boundaries = {
       "2026-04-18": "18:00",
       "2026-04-19": "19:00",
@@ -225,17 +266,17 @@ export function runDayBoundaryV2Tests(run) {
       window.end.toString(),
       "2026-04-19T19:00:00+08:00[Asia/Singapore]",
     );
-    assert.equal(window.metadata.strategy, "daily-boundary-v2");
+    assert.equal(window.metadata.strategy, "daily-boundary-v3");
   });
 
-  run("v2 DailyBoundaryStrategy rejects a missing boundary resolver", () => {
+  run("v3 DailyBoundaryStrategy rejects a missing boundary resolver", () => {
     assert.throws(
       () => new DailyBoundaryStrategy({ timeZone: "Asia/Singapore" }),
       TypeError,
     );
   });
 
-  run("v2 DailyBoundaryStrategy rejects legacy constructor usage without an explicit timeZone", () => {
+  run("v3 DailyBoundaryStrategy rejects legacy constructor usage without an explicit timeZone", () => {
     assert.throws(
       () =>
         new DailyBoundaryStrategy({
@@ -250,7 +291,7 @@ export function runDayBoundaryV2Tests(run) {
     );
   });
 
-  run("v2 DailyBoundaryStrategy throws when the resolver does not return ZonedDateTime", () => {
+  run("v3 DailyBoundaryStrategy throws when the resolver does not return ZonedDateTime", () => {
     const strategy = new DailyBoundaryStrategy({
       timeZone: "Asia/Singapore",
       getBoundaryForDate() {
@@ -264,7 +305,7 @@ export function runDayBoundaryV2Tests(run) {
     );
   });
 
-  run("v2 DailyBoundaryStrategy rejects legacy Date resolver results with migration guidance", () => {
+  run("v3 DailyBoundaryStrategy rejects legacy Date resolver results with migration guidance", () => {
     const strategy = new DailyBoundaryStrategy({
       timeZone: "Asia/Singapore",
       getBoundaryForDate() {
@@ -281,7 +322,7 @@ export function runDayBoundaryV2Tests(run) {
     );
   });
 
-  run("v2 DailyBoundaryStrategy throws when resolved boundaries do not form a valid window", () => {
+  run("v3 DailyBoundaryStrategy throws when resolved boundaries do not form a valid window", () => {
     const strategy = new DailyBoundaryStrategy({
       timeZone: "Asia/Singapore",
       getBoundaryForDate(_date, context) {
@@ -295,7 +336,7 @@ export function runDayBoundaryV2Tests(run) {
     );
   });
 
-  run("v2 isSameWindow distinguishes timestamps on opposite sides of the boundary", () => {
+  run("v3 isSameWindow distinguishes timestamps on opposite sides of the boundary", () => {
     const strategy = new FixedTimeBoundaryStrategy({
       timeZone: "Asia/Singapore",
       boundaryTime: "09:00",
@@ -320,7 +361,7 @@ export function runDayBoundaryV2Tests(run) {
     );
   });
 
-  run("v2 groupByWindow buckets records into boundary windows", () => {
+  run("v3 groupByWindow buckets records into boundary windows", () => {
     const strategy = new FixedTimeBoundaryStrategy({
       timeZone: "Asia/Singapore",
       boundaryTime: "09:00",
