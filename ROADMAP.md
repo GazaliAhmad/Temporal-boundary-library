@@ -1,6 +1,6 @@
 # Roadmap
 
-This roadmap reflects the current state of `day-boundary` in the `3.0.3` line.
+This roadmap reflects the current state of `day-boundary` in the `3.1.0` line.
 
 The library is now positioned as:
 
@@ -20,6 +20,7 @@ The repo currently includes:
 - neutral boundary-window duration helpers in [lib/window-durations.js](./lib/window-durations.js)
 - a test suite covering boundary windows, DST-sensitive behavior, and duration semantics
 - explicit runtime migration guards for common legacy input shapes so older v1-style usage fails with targeted upgrade guidance
+- an explicit Node `18+` and ESM-only package contract
 - browser examples in [examples/](./examples/)
 - npm packaging metadata for the current `day-boundary` `3.x` line
 
@@ -73,6 +74,7 @@ Legacy v1 artifacts may remain in the repository for historical context and migr
 
 The current example suite is:
 
+- [examples/day-boundary-operational-day-demo/index.html](./examples/day-boundary-operational-day-demo/index.html)
 - [examples/day-boundary-toy-app/index.html](./examples/day-boundary-toy-app/index.html)
 - [examples/day-boundary-hijri-poc/index.html](./examples/day-boundary-hijri-poc/index.html)
 - [examples/day-boundary-dst-toy-app/index.html](./examples/day-boundary-dst-toy-app/index.html)
@@ -80,6 +82,7 @@ The current example suite is:
 
 These examples currently validate:
 
+- a realistic 06:00 operational-day setup in a DST-sensitive region
 - fixed daily boundaries
 - shifting per-date boundaries
 - dataset-backed window resolution
@@ -129,6 +132,7 @@ Before broader adoption, keep tightening the publishing story.
 Focus areas:
 
 - keep package metadata aligned with docs
+- keep the Node `18+` and ESM-only support story explicit and consistent across package metadata, README, and guides
 - keep legacy migration guidance explicit and consistent across runtime errors, README examples, and guides
 - periodically verify `npm pack` contents
 - keep the public import story simple and stable
@@ -189,7 +193,9 @@ The documentation should continue to reinforce:
 - the library is a boundary engine, not a general date library
 - business policy belongs above the primitive
 
-The documentation structure should stay organized under [guides/](./guides/), with a clear split between:
+The documentation structure should stay organized under [guides/](./guides/), with the main path centered on the guides hub, usage guide, API guide, and operational-day demo. Supporting material should remain available without competing with that main path.
+
+The documentation split should remain clear between:
 
 - usage guides such as [guides/usage.md](./guides/usage.md)
 - API and reference documents such as [guides/api.md](./guides/api.md) and [guides/functions-reference.md](./guides/functions-reference.md)
