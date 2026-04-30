@@ -68,13 +68,20 @@ export interface BoundaryWindowGroup<T> {
   readonly items: T[];
 }
 
+export interface BoundaryEndComparison {
+  readonly elapsedEnd: Temporal.ZonedDateTime;
+  readonly wallClockEnd: Temporal.ZonedDateTime;
+  readonly sameInstant: boolean;
+  readonly differenceMinutes: number;
+}
+
 export declare abstract class BoundaryStrategy {
   protected readonly __dayBoundaryBrand: symbol;
   readonly timeZone: string;
 
   protected constructor(options: DayBoundaryConfig);
 
-  abstract getWindowForInstant(instant: Temporal.Instant): BoundaryWindow;
+  abstract getWindowForInstant(instant: ExactTime): BoundaryWindow;
 }
 
 export declare class FixedTimeBoundaryStrategy extends BoundaryStrategy {
@@ -86,7 +93,7 @@ export declare class FixedTimeBoundaryStrategy extends BoundaryStrategy {
 
   getBoundaryForDate(date: Temporal.PlainDate): Temporal.ZonedDateTime;
 
-  getWindowForInstant(instant: Temporal.Instant): BoundaryWindow;
+  getWindowForInstant(instant: ExactTime): BoundaryWindow;
 }
 
 export declare class DailyBoundaryStrategy extends BoundaryStrategy {
@@ -97,11 +104,11 @@ export declare class DailyBoundaryStrategy extends BoundaryStrategy {
 
   getBoundaryForDate(date: Temporal.PlainDate): Temporal.ZonedDateTime;
 
-  getWindowForInstant(instant: Temporal.Instant): BoundaryWindow;
+  getWindowForInstant(instant: ExactTime): BoundaryWindow;
 }
 
 export declare function getWindowForInstant(
-  instant: Temporal.Instant,
+  instant: ExactTime,
   strategy: BoundaryStrategy,
 ): BoundaryWindow;
 
@@ -120,6 +127,21 @@ export declare function getWindowProgress(
   instant: ExactTime,
   window: BoundaryWindowIdentity,
 ): number;
+
+export declare function getWindowEndByElapsedDuration(
+  start: Temporal.ZonedDateTime,
+  duration: Temporal.Duration | Temporal.DurationLike,
+): Temporal.ZonedDateTime;
+
+export declare function getWindowEndByWallClockDuration(
+  start: Temporal.ZonedDateTime,
+  duration: Temporal.Duration | Temporal.DurationLike,
+): Temporal.ZonedDateTime;
+
+export declare function compareWindowEndings(
+  start: Temporal.ZonedDateTime,
+  duration: Temporal.Duration | Temporal.DurationLike,
+): BoundaryEndComparison;
 
 export declare function getWindowId(window: BoundaryWindowIdentity): string;
 

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Day Boundary Operational Day Demo</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "@js-temporal/polyfill": "../../node_modules/@js-temporal/polyfill/dist/index.esm.js",
+          "jsbi": "../../node_modules/jsbi/dist/jsbi.mjs"
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <p class="eyebrow">Example</p>
+        <h1>Operational Day at 06:00</h1>
+        <p class="lede">
+          A true <strong>day-boundary</strong> demo for the common case where the
+          app's operational day starts at <strong>06:00</strong> in
+          <strong>Europe/London</strong> instead of midnight.
+        </p>
+        <div class="hero-actions">
+          <a class="action-link" href="../../guides/usage.html">Read usage guide</a>
+          <a class="action-link" href="../../guides/index.html">Read guides hub</a>
+          <a class="action-link" href="../../guides/api.html">Read API guide</a>
+        </div>
+        <div class="callout">
+          <strong>What this page covers:</strong> define one fixed-time strategy,
+          resolve an exact timestamp into a window, group records by that window,
+          and compare elapsed versus wall-clock duration behavior across DST.
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Exact Timestamp to Window</h2>
+            <div class="panel-actions">
+              <span class="badge">Core entry point</span>
+              <button class="copy-button" data-copy-target="resolve-code" type="button">Copy</button>
+            </div>
+          </div>
+          <p class="panel-copy">
+            Use <code>getWindowForInstant(...)</code> when you have a real exact
+            timestamp and need the surrounding operational window.
+          </p>
+          <div class="fact-grid">
+            <div>
+              <div class="fact-label">Strategy</div>
+              <div class="mono" id="resolve-strategy"></div>
+            </div>
+            <div>
+              <div class="fact-label">Input instant</div>
+              <div class="mono" id="resolve-input"></div>
+            </div>
+            <div>
+              <div class="fact-label">Window start</div>
+              <div class="mono" id="resolve-start"></div>
+            </div>
+            <div>
+              <div class="fact-label">Window end</div>
+              <div class="mono" id="resolve-end"></div>
+            </div>
+            <div>
+              <div class="fact-label">Window ID</div>
+              <div class="mono" id="resolve-id"></div>
+            </div>
+            <div>
+              <div class="fact-label">Metadata</div>
+              <div class="mono" id="resolve-metadata"></div>
+            </div>
+          </div>
+          <pre><code id="resolve-code"></code></pre>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Group Events by Window</h2>
+            <div class="panel-actions">
+              <span class="badge">Reuse the same rule</span>
+              <button class="copy-button" data-copy-target="group-code" type="button">Copy</button>
+            </div>
+          </div>
+          <p class="panel-copy">
+            The same strategy can drive reports, exports, and dashboards without
+            duplicating boundary logic in caller code.
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Resolved Window</th>
+                  <th>Events</th>
+                </tr>
+              </thead>
+              <tbody id="group-table-body"></tbody>
+            </table>
+          </div>
+          <pre><code id="group-code"></code></pre>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>DST Duration Difference</h2>
+            <div class="panel-actions">
+              <span class="badge">Elapsed vs wall-clock</span>
+              <button class="copy-button" data-copy-target="duration-code" type="button">Copy</button>
+            </div>
+          </div>
+          <p class="panel-copy">
+            During DST transitions, the same labeled duration can end at a
+            different exact instant depending on whether the rule means elapsed
+            time or local wall-clock time.
+          </p>
+          <div class="fact-grid">
+            <div>
+              <div class="fact-label">Start</div>
+              <div class="mono" id="duration-start"></div>
+            </div>
+            <div>
+              <div class="fact-label">Duration</div>
+              <div class="mono" id="duration-input"></div>
+            </div>
+            <div>
+              <div class="fact-label">Elapsed end</div>
+              <div class="mono" id="elapsed-end"></div>
+            </div>
+            <div>
+              <div class="fact-label">Wall-clock end</div>
+              <div class="mono" id="wallclock-end"></div>
+            </div>
+            <div>
+              <div class="fact-label">Same instant?</div>
+              <div class="mono" id="same-instant"></div>
+            </div>
+            <div>
+              <div class="fact-label">Difference</div>
+              <div class="mono" id="difference-minutes"></div>
+            </div>
+          </div>
+          <pre><code id="duration-code"></code></pre>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Why This Works</h2>
+            <span class="badge">Mental model</span>
+          </div>
+          <ol class="flow-list" id="flow-list"></ol>
+        </article>
+      </section>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

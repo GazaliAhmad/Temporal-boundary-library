@@ -1,6 +1,6 @@
 import { runDailyBoundaryTests } from "./ver-01/daily-boundary.test.js";
 import { runDayBoundaryDurationTests } from "./ver-03/day-boundary-durations.test.js";
-import { runDayBoundaryV2Tests } from "./ver-03/day-boundary.test.js";
+import { runDayBoundaryV3Tests } from "./ver-03/day-boundary.test.js";
 import { runFixedTimeBoundaryTests } from "./ver-01/fixed-time-boundary.test.js";
 import { runGroupingTests } from "./ver-01/grouping.test.js";
 
@@ -13,7 +13,7 @@ function run(name, fn) {
 runFixedTimeBoundaryTests(run);
 runDailyBoundaryTests(run);
 runGroupingTests(run);
-runDayBoundaryV2Tests(run);
+runDayBoundaryV3Tests(run);
 runDayBoundaryDurationTests(run);
 
 let passed = 0;

@@ -6,6 +6,22 @@ The format is based on Keep a Changelog, and this project aims to follow Semanti
 
 Note: the historical `1.0.0` section below documents the internal baseline for the archived v1 API line. It was not published as a package release. The first public package release was `2.0.0`.
 
+## [3.1.0] - 2026-05-01
+
+### Added
+
+- Added an explicit Node.js support floor of `>=18` via `package.json` engines metadata.
+- Added focused runtime validation for empty `boundaryTime` strings so invalid fixed-time boundaries fail with a library-owned error.
+- Added regression tests covering nullish public inputs and empty `boundaryTime` validation.
+- Added a new operational-day browser demo showing boundary-window resolution, grouping, and DST-aware duration behavior using `Europe/London`.
+
+### Changed
+
+- Declared the package explicitly as ESM-only in the documentation.
+- Tightened the published TypeScript declaration files so exact-time helpers accept the same exact-time inputs as the runtime and duration helpers accept `Temporal.DurationLike`.
+- Expanded the README and API docs to document Node support, ESM-only usage, and current invalid-input behavior.
+- Reworked the repository docs surface so the main path centers on Usage, API, and the operational-day demo.
+
 ## [3.0.3] - 2026-04-29
 
 ### Changed

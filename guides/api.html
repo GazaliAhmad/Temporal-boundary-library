@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>day-boundary API Guide</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <p class="eyebrow">Spec</p>
+        <h1>Current API</h1>
+        <p class="lede">
+          The current <strong>3.x</strong> API makes boundary-defined windows
+          explicit: a boundary event opens or closes a meaningful span of time,
+          and the library resolves those windows with <code>Temporal</code> and
+          explicit IANA time zones.
+        </p>
+        <div class="hero-actions">
+          <a class="action-link" href="./index.html">Guides Hub</a>
+          <a class="action-link" href="./usage.html">Usage Guide</a>
+          <a class="action-link" href="../examples/day-boundary-operational-day-demo/">Operational Day Demo</a>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Related Guides</h2>
+            <span class="badge">Primary context</span>
+          </div>
+          <p class="muted">
+            The main companion to this spec is the practical usage guide.
+          </p>
+          <div class="nav-grid">
+            <a class="nav-card" href="./usage.html">
+              <strong>Usage</strong>
+              <p>Practical examples for installing the package and using the current API.</p>
+            </a>
+          </div>
+          <p class="muted">
+            Supporting references:
+          </p>
+          <ul class="link-list">
+            <li><a href="./functions-reference.html">Functions Reference</a></li>
+            <li><a href="./use-cases.html">Use Cases</a></li>
+          </ul>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Design Goals</h2>
+            <span class="badge">North star</span>
+          </div>
+          <ul class="bullet-list">
+            <li>Use <code>Temporal</code> as the core time model.</li>
+            <li>Require explicit IANA time zones.</li>
+            <li>Represent windows as exact time in a named zone.</li>
+            <li>Handle DST and non-24-hour days correctly.</li>
+            <li>Keep calendar labeling out of the core library.</li>
+            <li>Preserve the main mental model: boundary events define windows.</li>
+            <li>Keep the API idiomatic to Temporal instead of recreating parallel date/time concepts.</li>
+          </ul>
+        </article>
+      </section>
+
+      <section class="stack">
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Non-goals</h2>
+            <span class="badge">Intentional boundaries</span>
+          </div>
+          <ul class="bullet-list">
+            <li>Calculating religious calendars.</li>
+            <li>Calculating lunar calendar labels.</li>
+            <li>Embedding domain-specific boundary meaning into the API.</li>
+            <li>Hiding time zone handling behind host-local defaults.</li>
+          </ul>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Core Concepts</h2>
+            <span class="badge">Mental model</span>
+          </div>
+          <div class="grid">
+            <div>
+              <h3>Boundary window</h3>
+              <p class="muted">
+                A boundary event is a resolved point in time with domain meaning,
+                such as a cutoff, changeover, opening, closing, start, or end.
+                A boundary window is the interval between two boundary events:
+              </p>
+              <pre><code>[boundary_n, boundary_n+1)</code></pre>
+              <p class="muted">
+                Boundaries are resolved in an explicit IANA time zone and
+                returned as <code>Temporal.ZonedDateTime</code>.
+              </p>
+            </div>
+            <div>
+              <h3>Time model</h3>
+              <ul class="bullet-list">
+                <li>Exact time: <code>Temporal.Instant</code></li>
+                <li>Wall-clock local date/time: <code>Temporal.PlainDateTime</code></li>
+                <li>Zone-aware exact/local value: <code>Temporal.ZonedDateTime</code></li>
+              </ul>
+              <p class="muted">
+                Core comparison, grouping, and progress calculations use exact
+                time semantics.
+              </p>
+            </div>
+          </div>
+          <pre><code>type BoundaryWindow = {
+  start: Temporal.ZonedDateTime;
+  end: Temporal.ZonedDateTime;
+  label: string;
+  metadata: Record&lt;string, unknown&gt;;
+};</code></pre>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Package Entry and Strategy API</h2>
+            <span class="badge">Public shape</span>
+          </div>
+          <div class="grid">
+            <div>
+              <h3>Package entry</h3>
+              <pre><code>import { ... } from 'day-boundary';</code></pre>
+            </div>
+            <div>
+              <h3><code>BoundaryStrategy</code></h3>
+              <pre><code>interface BoundaryStrategy {
+  timeZone: string;
+  getWindowForInstant(instant: Temporal.Instant): BoundaryWindow;
+}</code></pre>
+              <ul class="bullet-list">
+                <li>Every strategy must have an explicit <code>timeZone</code>.</li>
+                <li>The primary resolution entry point is <code>getWindowForInstant</code>.</li>
+                <li>Strategies may internally resolve local dates, but public resolution stays exact-time based.</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <section class="grid">
+          <article class="panel">
+            <div class="panel-head">
+              <h2><code>FixedTimeBoundaryStrategy</code></h2>
+              <div class="panel-actions">
+                <span class="badge">Built-in strategy</span>
+                <button class="copy-button" data-copy-target="fixed-spec" type="button">Copy</button>
+              </div>
+            </div>
+            <p class="section-copy">
+              Use this when the boundary is the same wall-clock time every day
+              in a given zone.
+            </p>
+            <pre><code id="fixed-spec">new FixedTimeBoundaryStrategy({
+  timeZone: string,
+  boundaryTime: Temporal.PlainTime,
+  label?: string,
+  disambiguation?: 'compatible' | 'earlier' | 'later' | 'reject',
+})</code></pre>
+            <pre><code>const strategy = new FixedTimeBoundaryStrategy({
+  timeZone: 'Europe/London',
+  boundaryTime: Temporal.PlainTime.from('09:00'),
+  label: 'operational-day',
+});</code></pre>
+            <ul class="bullet-list">
+              <li>Boundary time is interpreted as local wall-clock time in the configured zone.</li>
+              <li>DST ambiguity is resolved using <code>disambiguation</code>.</li>
+              <li>The duration between boundaries is not assumed to be 24 hours.</li>
+            </ul>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <h2><code>DailyBoundaryStrategy</code></h2>
+              <div class="panel-actions">
+                <span class="badge">Built-in strategy</span>
+                <button class="copy-button" data-copy-target="daily-spec" type="button">Copy</button>
+              </div>
+            </div>
+            <p class="section-copy">
+              Use this when the boundary changes by date and must come from a
+              timetable or resolver.
+            </p>
+            <pre><code id="daily-spec">new DailyBoundaryStrategy({
+  timeZone: string,
+  label?: string,
+  disambiguation?: 'compatible' | 'earlier' | 'later' | 'reject',
+  getBoundaryForDate: (
+    date: Temporal.PlainDate,
+    context: {
+      timeZone: string,
+      disambiguation: 'compatible' | 'earlier' | 'later' | 'reject',
+      calendar: 'iso8601',
+    }
+  ) => Temporal.ZonedDateTime,
+})</code></pre>
+            <pre><code>const strategy = new DailyBoundaryStrategy({
+  timeZone: 'Asia/Singapore',
+  label: 'shifting-day',
+  getBoundaryForDate(date, context) {
+    const key = date.toString();
+    const boundaryTime = boundaryByDate[key];
+    const time = Temporal.PlainTime.from(boundaryTime);
+
+    return Temporal.ZonedDateTime.from({
+      timeZone: context.timeZone,
+      year: date.year,
+      month: date.month,
+      day: date.day,
+      hour: time.hour,
+      minute: time.minute,
+    });
+  },
+});</code></pre>
+            <ul class="bullet-list">
+              <li>The resolver must support the dates needed to derive the surrounding window.</li>
+              <li>The strategy resolves previous, current, and next local dates around the target instant.</li>
+              <li>The returned boundary should stay in <code>context.timeZone</code>.</li>
+            </ul>
+          </article>
+        </section>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Top-level Resolution Helpers</h2>
+            <span class="badge">Input-specific entry points</span>
+          </div>
+          <div class="grid">
+            <div>
+              <h3><code>getWindowForInstant(instant, strategy)</code></h3>
+              <pre><code>getWindowForInstant(
+  instant: Temporal.Instant,
+  strategy: BoundaryStrategy
+): BoundaryWindow</code></pre>
+              <pre><code>const window = getWindowForInstant(Temporal.Now.instant(), strategy);</code></pre>
+            </div>
+            <div>
+              <h3><code>getWindowForZonedDateTime(zonedDateTime, strategy)</code></h3>
+              <pre><code>getWindowForZonedDateTime(
+  zonedDateTime: Temporal.ZonedDateTime,
+  strategy: BoundaryStrategy
+): BoundaryWindow</code></pre>
+              <ul class="bullet-list">
+                <li>Resolves using the exact instant from the input.</li>
+                <li>If the input zone differs, the instant is preserved and the strategy zone is authoritative.</li>
+              </ul>
+            </div>
+            <div>
+              <h3><code>getWindowForPlainDateTime(plainDateTime, strategy, options)</code></h3>
+              <pre><code>getWindowForPlainDateTime(
+  plainDateTime: Temporal.PlainDateTime,
+  strategy: BoundaryStrategy,
+  options?: {
+    timeZone?: string,
+    disambiguation?: 'compatible' | 'earlier' | 'later' | 'reject',
+  }
+): BoundaryWindow</code></pre>
+              <ul class="bullet-list">
+                <li>Converts wall-clock input into an exact instant using a time zone.</li>
+                <li>Defaults <code>timeZone</code> to <code>strategy.timeZone</code>.</li>
+                <li>Uses <code>disambiguation</code> when local time is repeated or skipped.</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Utility Helpers</h2>
+            <span class="badge">Window operations</span>
+          </div>
+          <div class="grid">
+            <div>
+              <h3><code>getWindowProgress(instant, window)</code></h3>
+              <pre><code>getWindowProgress(
+  instant: Temporal.Instant,
+  window: BoundaryWindow
+): number</code></pre>
+              <ul class="bullet-list">
+                <li>Returns a number from <code>0</code> to <code>1</code>.</li>
+                <li>Uses exact time differences.</li>
+                <li>Works for 23-hour, 24-hour, 25-hour, and other non-standard windows.</li>
+              </ul>
+            </div>
+            <div>
+              <h3><code>isSameWindow(a, b, strategy)</code></h3>
+              <pre><code>isSameWindow(
+  a: Temporal.Instant,
+  b: Temporal.Instant,
+  strategy: BoundaryStrategy
+): boolean</code></pre>
+            </div>
+            <div>
+              <h3><code>groupByWindow(items, getInstant, strategy)</code></h3>
+              <pre><code>groupByWindow&lt;T&gt;(
+  items: T[],
+  getInstant: (item: T) => Temporal.Instant,
+  strategy: BoundaryStrategy
+): Array&lt;{ window: BoundaryWindow, items: T[] }&gt;</code></pre>
+              <ul class="bullet-list">
+                <li>Group identity is based on exact <code>start</code> and <code>end</code>.</li>
+                <li>Returned groups preserve encounter order unless a future option specifies sorting.</li>
+              </ul>
+            </div>
+            <div>
+              <h3><code>getWindowId(window)</code></h3>
+              <pre><code>getWindowId(window: BoundaryWindow): string</code></pre>
+              <pre><code>{start.toString()}__{end.toString()}</code></pre>
+            </div>
+          </div>
+        </article>
+
+        <section class="grid">
+          <article class="panel">
+            <div class="panel-head">
+              <h2>DST and Time Zone Behavior</h2>
+              <span class="badge">Explicit by design</span>
+            </div>
+            <ul class="bullet-list">
+              <li>Supports IANA time zones such as <code>Asia/Singapore</code>, <code>Europe/London</code>, and <code>America/New_York</code>.</li>
+              <li>Handles DST transitions, repeated local times, and skipped local times.</li>
+              <li>Never depends on the host machine's implicit local time zone.</li>
+              <li>Never assumes a day is 24 hours.</li>
+              <li>Public APIs avoid manual offset math and rely on Temporal's zone resolution behavior.</li>
+            </ul>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <h2>Error Behavior</h2>
+              <span class="badge">Failure modes</span>
+            </div>
+            <ul class="bullet-list">
+              <li>Throws when a strategy is invalid.</li>
+              <li>Throws when a required time zone is missing or invalid.</li>
+              <li>Throws when a boundary cannot be resolved.</li>
+              <li>Throws when resolved boundaries do not form a valid window.</li>
+              <li>Throws when a local date/time cannot be resolved and <code>disambiguation: 'reject'</code> is used.</li>
+            </ul>
+          </article>
+        </section>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Boundary Duration Semantics</h2>
+            <div class="panel-actions">
+              <span class="badge">Elapsed vs wall-clock</span>
+              <button class="copy-button" data-copy-target="duration-spec" type="button">Copy</button>
+            </div>
+          </div>
+          <p class="section-copy">
+            For worker schedules, schools, delivery operations, and factory
+            processes, the API keeps two meanings separate: elapsed duration and
+            wall-clock schedule. These diverge on DST transition days.
+          </p>
+          <ul class="bullet-list">
+            <li><code>Temporal.Instant</code> is the right primitive for elapsed-duration rules.</li>
+            <li><code>Temporal.ZonedDateTime</code> is the right primitive for wall-clock schedule rules.</li>
+            <li>This distinction should stay explicit in examples, docs, and higher-level helpers.</li>
+          </ul>
+          <pre><code id="duration-spec">const start = Temporal.ZonedDateTime.from(
+  '2026-10-25T00:00:00+01:00[Europe/London]'
+);
+
+const result = compareWindowEndings(start, { hours: 8 });
+
+// elapsedEnd   -> 2026-10-25T07:00:00+00:00[Europe/London]
+// wallClockEnd -> 2026-10-25T08:00:00+00:00[Europe/London]</code></pre>
+          <h3>Boundary duration helpers</h3>
+          <ul class="bullet-list">
+            <li><code>getWindowEndByElapsedDuration(start, duration)</code></li>
+            <li><code>getWindowEndByWallClockDuration(start, duration)</code></li>
+            <li><code>compareWindowEndings(start, duration)</code></li>
+          </ul>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Calendar Labeling Policy</h2>
+            <span class="badge">Out of scope</span>
+          </div>
+          <p class="section-copy">
+            Calendar labeling is intentionally outside the core library. The
+            library resolves windows; applications or companion modules map
+            those windows to labels.
+          </p>
+          <ul class="bullet-list">
+            <li>Hijri calendar datasets</li>
+            <li>Chinese lunar calendar datasets</li>
+            <li>Business reporting day labels</li>
+            <li>Custom user-defined day names</li>
+          </ul>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Migration Guidance from v1</h2>
+            <span class="badge">Upgrade path</span>
+          </div>
+          <div class="grid">
+            <div>
+              <h3>Conceptual changes</h3>
+              <ul class="bullet-list">
+                <li>v1 used <code>Date</code> and implicit host-local behavior.</li>
+                <li>The current API uses <code>Temporal</code> and explicit IANA time zones.</li>
+                <li>Windows are resolved using exact-time semantics.</li>
+                <li>The core surface prefers Temporal-native types.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Mapping</h3>
+              <ul class="bullet-list">
+                <li><code>getActiveWindow(now, strategy)</code> -> <code>getWindowForInstant(Temporal.Now.instant(), strategy)</code></li>
+                <li><code>getWindowForTimestamp(timestamp, strategy)</code> -> <code>getWindowForInstant(...)</code> or <code>getWindowForPlainDateTime(...)</code></li>
+                <li><code>FixedTimeBoundaryStrategy</code> still exists conceptually but now requires <code>timeZone</code>.</li>
+                <li><code>DailyBoundaryStrategy</code> now resolves boundaries with <code>Temporal</code>.</li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Common Legacy Inputs and Explicit Failures</h2>
+            <span class="badge">Runtime guidance</span>
+          </div>
+          <div class="stack">
+            <div>
+              <h3><code>FixedTimeBoundaryStrategy</code></h3>
+              <p class="muted">Legacy fixed-time keys such as <code>startHour</code>, <code>startMinute</code>, <code>hour</code>, <code>minute</code>, and <code>second</code> now throw targeted migration errors.</p>
+              <pre><code>new FixedTimeBoundaryStrategy({
+  timeZone: 'Asia/Singapore',
+  boundaryTime: '06:00',
+});</code></pre>
+            </div>
+            <div>
+              <h3><code>DailyBoundaryStrategy</code></h3>
+              <p class="muted">Missing <code>timeZone</code> when a resolver is present now throws an explicit migration error, and legacy resolver return values such as <code>Date</code>, string, and number are rejected.</p>
+              <pre><code>new DailyBoundaryStrategy({
+  timeZone: 'Asia/Singapore',
+  getBoundaryForDate(date, context) {
+    return Temporal.ZonedDateTime.from({
+      timeZone: context.timeZone,
+      year: date.year,
+      month: date.month,
+      day: date.day,
+      hour: 19,
+      minute: 0,
+    });
+  },
+});</code></pre>
+            </div>
+            <div>
+              <h3>Exact-time inputs</h3>
+              <ul class="bullet-list">
+                <li>Legacy <code>Date</code>, string, and numeric timestamp inputs throw targeted migration errors.</li>
+                <li><code>null</code> and <code>undefined</code> exact-time inputs throw typed runtime errors expecting <code>Temporal.Instant</code> or <code>Temporal.ZonedDateTime</code>.</li>
+              </ul>
+              <pre><code>const instant = Temporal.Instant.from('2026-04-19T01:00:00Z');
+const window = getWindowForInstant(instant, strategy);</code></pre>
+            </div>
+            <div>
+              <h3>Wall-clock local inputs</h3>
+              <ul class="bullet-list">
+                <li>Legacy <code>Date</code>, string, and numeric inputs throw targeted migration errors.</li>
+                <li><code>null</code> and <code>undefined</code> wall-clock inputs throw typed runtime errors expecting <code>Temporal.PlainDateTime</code>.</li>
+                <li><code>boundaryTime: ''</code> throws a library-owned validation error.</li>
+                <li>In TypeScript, <code>boundaryTime</code> is typed as <code>string | Temporal.PlainTime</code>, so empty strings remain representable and are rejected at runtime.</li>
+              </ul>
+              <pre><code>const localInput = Temporal.PlainDateTime.from('2026-10-25T01:30:00');
+const window = getWindowForPlainDateTime(localInput, strategy);</code></pre>
+            </div>
+            <div>
+              <h3>Removed or renamed entry points</h3>
+              <ul class="bullet-list">
+                <li><code>day-boundary/shifts</code> -> root <code>day-boundary</code> entry</li>
+                <li><code>compareShiftEndings(...)</code> -> <code>compareWindowEndings(...)</code></li>
+                <li><code>getShiftEndByElapsedDuration(...)</code> -> <code>getWindowEndByElapsedDuration(...)</code></li>
+                <li><code>getShiftEndByWallClockDuration(...)</code> -> <code>getWindowEndByWallClockDuration(...)</code></li>
+              </ul>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2>Design Decisions and Current Recommendation</h2>
+            <span class="badge">Current line</span>
+          </div>
+          <ol class="bullet-list">
+            <li><code>BoundaryWindow.start</code> and <code>BoundaryWindow.end</code> use <code>Temporal.ZonedDateTime</code>.</li>
+            <li>Exact comparisons and duration math use <code>toInstant()</code> semantics internally.</li>
+            <li>The public API prefers readability and explicit zone context over a lower-level <code>Instant + timeZone</code> window shape.</li>
+          </ol>
+          <ul class="bullet-list">
+            <li>Core window values use <code>Temporal.ZonedDateTime</code>.</li>
+            <li>Exact comparisons use <code>toInstant()</code>.</li>
+            <li>Input helpers accept Temporal objects only.</li>
+            <li>Zone and DST handling are explicit.</li>
+            <li>Calendar labeling remains outside core.</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      for (const button of document.querySelectorAll(".copy-button")) {
+        button.addEventListener("click", async () => {
+          const targetId = button.getAttribute("data-copy-target");
+
+          if (!targetId) {
+            return;
+          }
+
+          const target = document.getElementById(targetId);
+
+          if (!target) {
+            return;
+          }
+
+          try {
+            await navigator.clipboard.writeText(target.textContent ?? "");
+            button.textContent = "Copied";
+          } catch {
+            button.textContent = "Unavailable";
+          }
+
+          window.setTimeout(() => {
+            button.textContent = "Copy";
+          }, 1600);
+        });
+      }
+    </script>
+  </body>
+</html>

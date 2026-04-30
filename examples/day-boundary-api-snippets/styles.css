@@ -1,6 +1,7 @@
 :root {
   color-scheme: light dark;
   font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+  --card-gap: 24px;
 }
 
 body {
@@ -20,8 +21,12 @@ body {
   padding: 32px 20px 48px;
 }
 
+.wrap > * + * {
+  margin-top: var(--card-gap);
+}
+
 .hero {
-  margin-bottom: 24px;
+  margin-bottom: 0;
 }
 
 .eyebrow {
@@ -53,8 +58,12 @@ h2 {
   color: #43546f;
 }
 
+.lede {
+  white-space: nowrap;
+}
+
 .card {
-  margin-bottom: 18px;
+  margin-bottom: 0;
   padding: 20px;
   border: 1px solid #b8c3d94d;
   border-radius: 18px;
@@ -70,7 +79,7 @@ h2 {
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
+  gap: var(--card-gap);
 }
 
 .label {
@@ -176,5 +185,11 @@ button:hover {
   .status[data-kind="false"] {
     background: #3b2413;
     color: #ffd5ae;
+  }
+}
+
+@media (max-width: 860px) {
+  .lede {
+    white-space: normal;
   }
 }

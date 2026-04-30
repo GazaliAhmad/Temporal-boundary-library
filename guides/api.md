@@ -495,6 +495,7 @@ const window = getWindowForInstant(instant, strategy);
 Runtime behavior:
 
 - legacy `Date`, string, and numeric timestamp inputs now throw a targeted migration error telling the caller to convert to `Temporal.Instant` or `Temporal.ZonedDateTime` first
+- `null` and `undefined` exact-time inputs throw a typed runtime error expecting `Temporal.Instant` or `Temporal.ZonedDateTime`
 
 #### Wall-clock local inputs
 
@@ -513,6 +514,9 @@ const window = getWindowForPlainDateTime(localInput, strategy);
 Runtime behavior:
 
 - legacy `Date`, string, and numeric inputs now throw a targeted migration error telling the caller to use `Temporal.PlainDateTime.from(...)` for wall-clock input, or `getWindowForInstant(...)` for exact timestamps
+- `null` and `undefined` wall-clock inputs throw a typed runtime error expecting `Temporal.PlainDateTime`
+- `boundaryTime: ''` now throws a library-owned validation error; use a non-empty string such as `'09:00'` or a `Temporal.PlainTime`
+- in TypeScript, `boundaryTime` is typed as `string | Temporal.PlainTime`, so empty strings are still representable in the type system and are rejected at runtime instead
 
 #### Removed or renamed entry points
 

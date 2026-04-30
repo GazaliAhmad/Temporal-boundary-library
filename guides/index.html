@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>day-boundary Guides</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <p class="eyebrow">Docs</p>
+        <h1>Guides</h1>
+        <p class="lede">
+          Longer-form documentation for <strong>day-boundary</strong>: where the
+          library fits, how to use the API, and how to apply it in real systems.
+        </p>
+        <div class="hero-actions">
+          <a class="action-link" href="./usage.html">Usage Guide</a>
+          <a class="action-link" href="../examples/day-boundary-operational-day-demo/">Operational Day Demo</a>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Main Path</h2>
+          <span class="badge">Start here</span>
+        </div>
+        <div class="nav-grid">
+          <a class="nav-card" href="./usage.html">
+            <strong>Usage</strong>
+            <p>The primary guide for installing the package and using the current API.</p>
+          </a>
+          <a class="nav-card" href="./api.html">
+            <strong>API</strong>
+            <p>The detailed contract for strategies, helpers, DST behavior, and migration rules.</p>
+          </a>
+          <a class="nav-card" href="../examples/day-boundary-operational-day-demo/">
+            <strong>Operational Day Demo</strong>
+            <p>A polished London-based example showing exact-window resolution, grouping, and DST duration behavior.</p>
+          </a>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>More Docs</h2>
+          <span class="badge">Supporting material</span>
+        </div>
+        <p class="muted">
+          These are useful when you want extra implementation detail or
+          positioning context, but they are not the primary path through the
+          library.
+        </p>
+        <ul class="link-list">
+          <li><a href="./functions-reference.html">Functions Reference</a> for the compact public and internal symbol inventory.</li>
+          <li><a href="./business-use-cases.html">Business Use Cases</a> for operational systems where boundary-defined windows fit best.</li>
+          <li><a href="./sql-dst-safe-queries.html">SQL DST-Safe Queries</a> for query patterns built around resolved <code>[start, end)</code> windows.</li>
+          <li><a href="./use-cases.html">Use Cases</a> for positioning, strengths, and where the library is unnecessary.</li>
+        </ul>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Archive</h2>
+          <span class="badge">Repository history</span>
+        </div>
+        <p class="muted">
+          Archived v1 and v2 guides remain in the repository for historical
+          reference only. They are not part of the main docs path for the
+          current package line.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
