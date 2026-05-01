@@ -9,6 +9,8 @@ Start here when you want examples of where the library fits, how to use the API,
 - [Usage](./usage.md) is the main usage guide for the current API.
 - [API](./api.md) is the detailed API specification.
 - [Functions Reference](./functions-reference.md) is the compact public-and-internal function inventory for the current codebase.
+- [DST and Duration Semantics](./dst-and-duration.md) explains how window duration behaves across DST transitions.
+- [v3 Migration Guide](./migration.md) summarizes the most common upgrades from older input shapes and helper names.
 
 Published package surface:
 

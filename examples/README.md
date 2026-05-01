@@ -2,6 +2,13 @@
 
 This folder contains browser examples for `day-boundary`.
 
+Before serving the examples, install the repository dependencies from the repo
+root:
+
+```bash
+npm install
+```
+
 Serve the repo root locally:
 
 ```bash
@@ -10,8 +17,8 @@ python -m http.server 8000
 
 Then open:
 
+- Start here: `http://localhost:8000/examples/day-boundary-operational-day-demo/`
 - `http://localhost:8000/examples/day-boundary-api-snippets/`
-- `http://localhost:8000/examples/day-boundary-operational-day-demo/`
 - `http://localhost:8000/examples/day-boundary-toy-app/`
 - `http://localhost:8000/examples/day-boundary-hijri-poc/`
 - `http://localhost:8000/examples/day-boundary-dst-toy-app/`

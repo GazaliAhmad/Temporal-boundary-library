@@ -6,6 +6,21 @@ The format is based on Keep a Changelog, and this project aims to follow Semanti
 
 Note: the historical `1.0.0` section below documents the internal baseline for the archived v1 API line. It was not published as a package release. The first public package release was `2.0.0`.
 
+## [3.1.1] - 2026-05-01
+
+### Added
+
+- Added focused guides for DST and duration semantics and for the common v3 migration path.
+
+### Changed
+
+- Reworked the top-level `README.md` into a clearer npm-facing landing page with an explicit start path for both package consumers and local repository users.
+- Restored the README golden path and critical DST guidance in a shorter, more scannable form.
+- Made the README requirements more explicit around ESM-only usage, Temporal-only inputs, and rejection of legacy `Date`, string timestamp, and numeric timestamp inputs.
+- Pointed the local example flow at the operational-day demo as the best first browser example.
+- Added an explicit reference from `day-boundary` to [`time-window-classifier` (`twc`)](https://github.com/GazaliAhmad/time-window-classifier) as the companion reference CLI that demonstrates `day-boundary` on JSONL event data.
+- Updated `examples/README.md` and `guides/README.md` to match the new documentation flow.
+
 ## [3.1.0] - 2026-05-01
 
 ### Added
